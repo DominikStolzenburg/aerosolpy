@@ -1,5 +1,6 @@
 # AerosolPython
 
+The AerosolPython package provides the aeropy python framework for conducting Aerosol Physics and Chemistry computations.
 
 
 ## Getting started
