@@ -25,7 +25,7 @@ def ppt_to_percm3(pptv,
     array_like
         gas concentration in [molec. cm-3]
     """
-    percm3 = 6.02214e23*(pres_hpa*1e2)/(8.3145*temp_klevin)*pptv*1e-12*1e-6
+    percm3 = 6.02214e23*(pres_hpa*1e2)/(8.3145*temp_kelvin)*pptv*1e-12*1e-6
     return percm3
 
 def mugprom3_to_ppb(mug_pro_m3, 
