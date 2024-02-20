@@ -13,8 +13,8 @@ from aeropy.units import mugprom3_to_ppb
 # are assigned to aeropy namespace
 # such that e.g.,  ap.AerosolMechanics() creates an instance of that class
 
-# tbd:
-#from aeropy.mechanics import AerosolMechanics
+
+from aeropy.mechanics import AerosolMechanics
 
 # tbd:
 #from kinetics import AerosolKinetics

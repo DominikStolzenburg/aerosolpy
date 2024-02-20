@@ -7,7 +7,7 @@ Created on Sun Feb 18 21:31:25 2024
 
 def ppt_to_percm3(pptv,
                   temp_kelvin=293.15,
-                  pres_hpa=101.325):
+                  pres_hpa=1013.25):
     """
     unit coversion from pptv to molecules per cm3
     

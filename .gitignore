@@ -1,2 +1,4 @@
 #ignore the spyder IDE project files
 .spyproject/
+#ignore conda environment of project
+env/

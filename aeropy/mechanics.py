@@ -59,7 +59,7 @@ class AerosolMechanics:
     
     """
     temp_ref = 296.15
-    pres_ref = 101.33
+    pres_ref = 1013.3
 
     def __init__(self, temp_kelvin=296.15, pres_hpa=101.33): 
         self.temp_kelvin = temp_kelvin
@@ -68,7 +68,7 @@ class AerosolMechanics:
                            /(1+(110.4/self.temp_kelvin))
                            )
         self.mfp = (67.3
-                    *(self.p_ref/self.p_hpa)
+                    *(self.pres_ref/self.pres_hpa)
                     *(self.temp_kelvin/self.temp_ref)
                     *self._temp_corr
                     )
@@ -453,9 +453,9 @@ class AerosolMechanics:
                               )
         return eta
     
-    def chargingprob_wiedensohler(self, dp, i):
+    def charge_prob(self, dp, i, method='wiedensohler'):
         """
-        steady-state charging probability according to [1]_
+        steady-state charging probability according to [1]_ or [2]_
         
         Parameters
         ----------
@@ -463,6 +463,8 @@ class AerosolMechanics:
             particle diameter in [nm]
         i : integer
             charging state, also negative
+        method : str
+            method used for caclulation, default 'wiedensohler'
         
         Returns
         ----------
@@ -471,6 +473,7 @@ class AerosolMechanics:
         
         Notes
         ----------
+        method 'wiedensohler' assumes:
         assumes Z+ = 1.34x10^(-4) m2 V-1 s-1
         assumes Z- = 1.60x10^(-4) m2 V-1 s-1
         assumes m+ = 140 amu
@@ -479,6 +482,8 @@ class AerosolMechanics:
         
         coefficients paramters_1[4] and parameters_2[5] are slightly different 
         from [1]_ and given as in ISO15900
+        
+        method 'flagan'
         
         Raises
         ----------
@@ -497,6 +502,10 @@ class AerosolMechanics:
         .. [2] R. Gunn, R.H. Woessner, "Measurements of the Systematic 
            Electrification of Aerosols", J. Colloid Sci., vol. 11, pp.
            254-259, 1956
+        .. [3] X. Lopez-Yglesias, R.C. Flagan, "Ion–Aerosol Flux Coefficients 
+           and the Steady-State Charge Distribution of Aerosols in a 
+           Bipolar Ion Environment", Aerosol Sci. Tech., vol. 47, iss. 6,
+           pp. 688-704, 2013
         """
         if i is None:
             return 1
@@ -558,6 +567,8 @@ class AerosolMechanics:
         calculation are done in terms of a particle radii, which is different
         from the Wiedensohler Fit [2], this method takes that into account and 
         divides the input by 2
+        
+        calculation does not include any temperature dependencies.      
         
         See also
         ----------
