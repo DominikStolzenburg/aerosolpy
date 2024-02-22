@@ -15,6 +15,4 @@ from aeropy.units import mugprom3_to_ppb
 
 
 from aeropy.mechanics import AerosolMechanics
-
-# tbd:
-#from kinetics import AerosolKinetics
+from aeropy.kinetics import AerosolKinetics

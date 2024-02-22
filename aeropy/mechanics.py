@@ -260,6 +260,72 @@ class AerosolMechanics:
                       /(3*3.14159*self.airvisc*dp*1e-9)
                       )
         return diff_coeff
+    
+    def diff_coeff_v(self, mv=98.08, diff_vol_v=51.96):
+        """
+        calculation of the diffusion coefficient of a trace vapor in air
+        following the method from [1]_
+
+        Parameters
+        ----------
+        mv : float, optional
+            molecular mass of trace vapor in [g mol-1], 
+            default H2SO4, i.e. 98.08
+        diff_vol_v : float, optional
+            diffusion volume of trace vapor, 
+            default H2SO4, i.e. 1*22.9+2*2.31+4*6.11 = 51.96
+
+        Returns
+        -------
+        float
+            diffusion coefficient of trace vapor in air [m2 s-1]
+            
+        Notes
+        ----------
+        The diffusion volume of a trace gas is found by summing atomic 
+        diffusion volumes. These atomic parameters were determined by a
+        regression analysis of many experimental data. A few are listed here:
+        C:15.9, H:2.31, O:6.11, N:4.54, S:22.9
+        
+        References
+        ----------
+        .. [1] E.N. Fuller, P.D. Schettler, and J.C. Giddings, New method for 
+           prediction of binary gas phase diffusion coefficients, Ind. Eng. 
+           Chem. 8, 5, 18–27, 1966
+
+        """
+        mair = 28.965
+        diff_vol_air = 19.7
+        pres_atmos = self.pres_hpa/1013.3
+        
+        return (1e-4*(0.00143 * self.temp_kelvin**1.75 * np.sqrt(1/mair+1/mv))
+                /(pres_atmos*(diff_vol_air**(1/3.)+diff_vol_v**(1/3.))**2)
+                )
+    
+    def mfp_v(self, mv=98.08, diff_vol_v=51.96):
+        """
+        calculates mean free path of a trace vapor in air
+
+        Parameters
+        ---------- 
+        mv : float, optional
+            molecular mass of trace vapor in [g mol-1], 
+            default H2SO4, i.e. 98.08
+        diff_vol_v : float, optional
+            diffusion volume of trace vapor, 
+            default H2SO4, i.e. 1*22.9+2*2.31+4*6.11 = 51.96
+            
+        Returns
+        -------
+        float
+            mean free path of trace vapor in air [m]
+
+        """
+        mfp_v = (3*np.sqrt(np.pi*mv/(8*8.314*self.temp_kelvin))
+                 *self.diff_coeff_v(mv=mv, diff_vol_v=diff_vol_v)
+                 )
+        return mfp_v
+        
 
     def dp_to_zp(self, dp, i=1):
         """
