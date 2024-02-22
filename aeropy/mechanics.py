@@ -7,6 +7,7 @@ Created on Sun Feb 18 21:41:46 2024
 
 import numpy as np
 import pandas as pd
+import warnings
 from scipy.optimize import brentq
 
 class AerosolMechanics:  
@@ -61,7 +62,7 @@ class AerosolMechanics:
     temp_ref = 296.15
     pres_ref = 1013.3
 
-    def __init__(self, temp_kelvin=296.15, pres_hpa=101.33): 
+    def __init__(self, temp_kelvin=296.15, pres_hpa=1013.3): 
         self.temp_kelvin = temp_kelvin
         self.pres_hpa = pres_hpa
         self._temp_corr = ((1+(110.4/self.temp_ref))
@@ -348,12 +349,18 @@ class AerosolMechanics:
         ----------
         Only valid for dp<5-10 nm and singly charged particles
         
+        Raises
+        ----------
+        warnings.warn if dp is larger than 10 nm
+        
         References
         ----------
         .. [1] J.M. Maekelae et al., "Comparison of mobility equivalent 
            diameter with Kelvin-Thomson diameter using ion mobility data",
            J. Chem. Phys., vol. 105, pp.1562, 1996
         """
+        if dp>10:
+            warnings.warn("dp_to_zp_approx only valid for dp<=10 nm")
         zp = 2.2458e-22*np.power(dp*1e-9,-1.9956)
         return zp
     
@@ -380,6 +387,7 @@ class AerosolMechanics:
         ----------
         Only valid for dp<5-10 nm and singly charged particles
         
+        
         References
         ----------
         .. [1] J.M. Maekelae et al., "Comparison of mobility equivalent 
@@ -387,6 +395,8 @@ class AerosolMechanics:
            J. Chem. Phys., vol. 105, pp.1562, 1996
         """
         dp = np.power((2.2458e-22)/zp,(1/1.9956))*1e9
+        if dp>10:
+            warnings.warn("dp_to_zp_approx only valid for dp<=10 nm")
         return dp
     
     def diff_loss(self, dp, l_q_ratio):
@@ -483,7 +493,16 @@ class AerosolMechanics:
         coefficients paramters_1[4] and parameters_2[5] are slightly different 
         from [1]_ and given as in ISO15900
         
-        method 'flagan'
+        method 'flagan':
+        incldues an improved three-body trapping, see [3]_
+        validity for i=+/-2 down to 5.9 nm
+        validity for i=+/-3 down to 17 nm
+        validity for i=+/-4 down to 28 nm
+        validity for i=+/-5 down to 59 nm
+        
+        calculation are done in terms of a particle radii, which is different
+        from the Wiedensohler Fit [2]_, this method takes that into account and 
+        divides the input by 2
         
         Raises
         ----------
@@ -510,224 +529,132 @@ class AerosolMechanics:
         if i is None:
             return 1
         
-        if i>2 or i<-2: 
-            #fundamental constants definition
-            k = 1.38065e-23 
-            e0 = 1.60218e-19 
-            eps0 = 8.854187817e-12 
-            pi = 3.14159
-            ionrat = 0.875 
-            dp = dp*1e-9
-            f1 = e0/(np.sqrt(4*pi**2*eps0*dp*k*self.temp_kelvin))
-            f2 = i-((2*pi*eps0*dp*k*self.temp_kelvin)/(e0*e0))*np.log(ionrat)
-            f3 = (4*pi*eps0*dp*k*self.temp_kelvin)/(e0*e0)
-            expo = (-1*f2**2)/f3
-            return f1*np.exp(expo)
+        if method=='wiedensohler':
         
-        if i==0:
-            parameters = [-0.0003,-0.1014,0.3073,-0.3372,0.1023,-0.0105]
-        if i==-1:
-            parameters = [-2.3197,0.6175,0.6201,-0.1105,-0.1260,0.0297]
-        if i==1:
-            parameters = [-2.3484,0.6044,0.4800,0.0013,-0.1553,0.0320]
-        if i==-2:
-            parameters = [-26.3328,35.9044,-21.4608,7.0867,-1.3088,0.1051]
-        if i==2:
-            parameters = [-44.4756,79.3772,-62.8900,26.4492,-5.7480,0.5049]
-        
-        ln_f = 0
-        for n in range(len(parameters)):
-            ln_f = ln_f+parameters[n]*np.power(np.log10(dp), n)	
-        
-        return 10**ln_f  
-    
-    def chargingprob_flagan(self, dp, i):
-        """
-        steady-state charging probability according to [1]_
-        
-        Parameters
-        ----------
-        dp : array_like
-            particle diameter in [nm]
-        i : integer
-            charging state, also negative
-        
-        Returns
-        ----------
-        array_like
-            charging probability (between 0 and 1), dimless
-        
-        Notes
-        ----------
-        validity for i=+/-2 down to 5.9 nm
-        validity for i=+/-3 down to 17 nm
-        validity for i=+/-4 down to 28 nm
-        validity for i=+/-5 down to 59 nm
-        
-        calculation are done in terms of a particle radii, which is different
-        from the Wiedensohler Fit [2], this method takes that into account and 
-        divides the input by 2
-        
-        calculation does not include any temperature dependencies.      
-        
-        See also
-        ----------
-        aeropy.AerosolMechanics.chargingprob_wiedensohler
-        
-        References
-        ----------
-        .. [1] X. Lopez-Yglesias, R.C. Flagan, "Ion–Aerosol Flux Coefficients 
-           and the Steady-State Charge Distribution of Aerosols in a 
-           Bipolar Ion Environment", Aerosol Sci. Tech., vol. 47, iss. 6,
-           pp. 688-704, 2013
-        .. [2] A. Wiedensohler, "An approximation of the bipolar charge 
-           distribution for particles in the submicron size range", J. 
-           Aerosol Sci., vol. 19, iss. 3, pp. 387-389, 1988
-        """
-        dp = dp*1e-9/2.
-        if i==0:
-            parameters = [-5620.580615855588,-6020.281150253605,
-                          -2682.720554337559,-618.3142058251258,
-                          -69.39589166091982,-0.8629661088069351,
-                          0.6272800207320783,0.04026159758545575,
-                          -0.004881768711602816,-0.0008311526316612112,
-                          -4.560454862192678e-05,-9.14436016204325e-07
-                          ]
-        if i==-1:
-            parameters = [-16256.24302513472,-18104.59519063551,
-                          -8385.18751635308,-2013.540812619644,
-                          -238.2129570032023,-4.221364439242806,
-                          2.134763807605387,0.153529237005573,
-                          -0.01647863678832515,-0.003055500953947007,
-                          -0.0001751324777999281,-3.643940565733972e-06
-                          ]
-        if i==1:
-            parameters = [-11669.46524419465,-13208.13801547822,
-                          -6229.185886813625,-1527.062166110873,
-                          -185.6708179146991,-3.814382449597352,
-                          1.655664123138045,0.1262855504026318,
-                          -0.01271686178942976,-0.002470988460025492,
-                          -0.0001448229201949434,-3.068294468877771e-06
-                          ]
-        if i==-2: 
-            parameters = [-1672.867775350727,-1583.306766457507,
-                          -582.3720642008033,-91.97359113075075,
-                          -1.568748488256809,1.164629174680927,
-                          0.03788660278041543,-0.01768478033510033,
-                          -0.0005778684507296507,0.000299084604278564,
-                          3.332336002630458e-05,1.069882730390284e-06
-                          ]
-        if i==2: 
-            parameters = [-11364.94684360679,-10909.62451051939,
-                          -4006.413925813445,-619.6917976542637,
-                          -7.637104223410326,7.954515209788541,
-                          0.2017758488789823,-0.1196015244412804,
-                          -0.003047397621542594,0.002006617478685773,
-                          0.0002131261027264777,6.631162680281141e-06
-                          ]
-        if i==-3: 
-            parameters = [-16600.3258631195,-16059.17398951356,
-                          -5899.297477211858,-889.3720619418431,
-                          -0.3511540040913571,13.07820350638132,
-                          0.1494622809152943,-0.2165538243225712,
-                          -0.002794922573801211,0.004054956841707034,
-                          0.0004200761804527175,1.314815626323974e-05
-                          ]
-        if i==3: 
-            parameters = [-5764.226169619205,-5223.680918959416,
-                          -1770.930453470834,-234.5542674631724,
-                          4.401571067064403,3.418007251049022,
-                          -0.0440097987745201,-0.05273798291238244,
-                          0.0006633754966853541,0.0009364347858777449,
-                          7.814224205764212e-05,2.005107390941037e-06
-                          ]
-        if i==-4: 
-            parameters = [3938.729459110893,4356.0292880304,
-                          1812.628532212749,311.5988457187613,
-                          2.606077462662085,-5.256279020425534,
-                          -0.1115557199789936,0.1013971263983293,
-                          0.002203120906847638,-0.002185345662947547,
-                          -0.0002528750269707867,-8.690764852484536e-06
-                          ]
-        if i==4: 
-            parameters = [13378.10631515542,13715.26547159727,
-                          5311.204533903537,835.7512117021216,
-                          -3.001718213271598,-14.10732176760596,
-                          -0.1071476874993932,0.2650733120790089,
-                          0.002569688298971444,-0.005655362659661236,
-                          -0.0006118639673359015,-2.015785581514091e-05
-                          ]
-        if i==-5: 
-            parameters = [13244.15207434321,13692.18289393852,
-                          5334.8773462506,837.6431824069086,
-                          -6.497776108810427,-14.86280614026587,
-                          -0.04668780211173303,0.2907384254768075,
-                          0.001663194455252792,-0.006490683796035172,
-                          -0.0007023715428848584,-2.332590255955917e-05
-                          ]
-        if i==5: 
-            parameters = [12509.38428946078,12861.69406116226,
-                          4972.044534351865,768.5587723166421,
-                          -8.728561677329289,-13.82532452477927,
-                          0.0135930873559063,0.2718600214394009,
-                          0.0004937922243827826,-0.006128022192926411,
-                          -0.0006515897934270276,-2.139863261256321e-05
-                          ]
-        ln_f = 0
-        for n in range(len(parameters)):
-            ln_f = ln_f+parameters[n]*np.power(np.log10(dp),n)
-        return 10**ln_f
-    
-    def condensation_sink(self,dp,dn_dlogdp):
-        """
-        calculates condensation sink according to [1]_
-        
-        Parameters
-        ----------
-        dp : array_like
-            diameter discretization of size distribution in [nm]
-        dn_dlogdp : array_like
-            size distribution in dN/dlogDp
+            if i==0:
+                parameters = [-0.0003,-0.1014,0.3073,-0.3372,0.1023,-0.0105]
+            elif i==-1:
+                parameters = [-2.3197,0.6175,0.6201,-0.1105,-0.1260,0.0297]
+            elif i==1:
+                parameters = [-2.3484,0.6044,0.4800,0.0013,-0.1553,0.0320]
+            elif i==-2:
+                parameters = [-26.3328,35.9044,-21.4608,7.0867,-1.3088,0.1051]
+            elif i==2:
+                parameters = [-44.4756,79.3772,-62.8900,26.4492,-5.7480,0.5049]
+            else:
+                #fundamental constants definition
+                k = 1.38065e-23 
+                e0 = 1.60218e-19 
+                eps0 = 8.854187817e-12 
+                pi = 3.14159
+                ionrat = 0.875 
+                dp = dp*1e-9
+                f1 = e0/(np.sqrt(4*pi**2*eps0*dp*k*self.temp_kelvin))
+                f2 = i-((2*pi*eps0*dp*k*self.temp_kelvin)/(e0*e0))*np.log(ionrat)
+                f3 = (4*pi*eps0*dp*k*self.temp_kelvin)/(e0*e0)
+                expo = (-1*f2**2)/f3
+                return f1*np.exp(expo)
             
-        Returns
-        ----------
-        float
-            condensation sink (cs) in [s-1]
-        np.ndarray
-            1-d array with size resolved CS contribution
+            ln_f = 0
+            for n in range(len(parameters)):
+                ln_f = ln_f+parameters[n]*np.power(np.log10(dp), n)	
+        
+            return 10**ln_f  
+        
+        if method=='flagan':
+            dp = dp*1e-9/2.
+            if i==0:
+                parameters = [-5620.580615855588,-6020.281150253605,
+                              -2682.720554337559,-618.3142058251258,
+                              -69.39589166091982,-0.8629661088069351,
+                              0.6272800207320783,0.04026159758545575,
+                              -0.004881768711602816,-0.0008311526316612112,
+                              -4.560454862192678e-05,-9.14436016204325e-07
+                              ]
+            elif i==-1:
+                parameters = [-16256.24302513472,-18104.59519063551,
+                              -8385.18751635308,-2013.540812619644,
+                              -238.2129570032023,-4.221364439242806,
+                              2.134763807605387,0.153529237005573,
+                              -0.01647863678832515,-0.003055500953947007,
+                              -0.0001751324777999281,-3.643940565733972e-06
+                              ]
+            elif i==1:
+                parameters = [-11669.46524419465,-13208.13801547822,
+                              -6229.185886813625,-1527.062166110873,
+                              -185.6708179146991,-3.814382449597352,
+                              1.655664123138045,0.1262855504026318,
+                              -0.01271686178942976,-0.002470988460025492,
+                              -0.0001448229201949434,-3.068294468877771e-06
+                              ]
+            elif i==-2: 
+                parameters = [-1672.867775350727,-1583.306766457507,
+                              -582.3720642008033,-91.97359113075075,
+                              -1.568748488256809,1.164629174680927,
+                              0.03788660278041543,-0.01768478033510033,
+                              -0.0005778684507296507,0.000299084604278564,
+                              3.332336002630458e-05,1.069882730390284e-06
+                              ]
+            elif i==2: 
+                parameters = [-11364.94684360679,-10909.62451051939,
+                              -4006.413925813445,-619.6917976542637,
+                              -7.637104223410326,7.954515209788541,
+                              0.2017758488789823,-0.1196015244412804,
+                              -0.003047397621542594,0.002006617478685773,
+                              0.0002131261027264777,6.631162680281141e-06
+                              ]
+            elif i==-3: 
+                parameters = [-16600.3258631195,-16059.17398951356,
+                              -5899.297477211858,-889.3720619418431,
+                              -0.3511540040913571,13.07820350638132,
+                              0.1494622809152943,-0.2165538243225712,
+                              -0.002794922573801211,0.004054956841707034,
+                              0.0004200761804527175,1.314815626323974e-05
+                              ]
+            elif i==3: 
+                parameters = [-5764.226169619205,-5223.680918959416,
+                              -1770.930453470834,-234.5542674631724,
+                              4.401571067064403,3.418007251049022,
+                              -0.0440097987745201,-0.05273798291238244,
+                              0.0006633754966853541,0.0009364347858777449,
+                              7.814224205764212e-05,2.005107390941037e-06
+                              ]
+            elif i==-4: 
+                parameters = [3938.729459110893,4356.0292880304,
+                              1812.628532212749,311.5988457187613,
+                              2.606077462662085,-5.256279020425534,
+                              -0.1115557199789936,0.1013971263983293,
+                              0.002203120906847638,-0.002185345662947547,
+                              -0.0002528750269707867,-8.690764852484536e-06
+                              ]
+            elif i==4: 
+                parameters = [13378.10631515542,13715.26547159727,
+                              5311.204533903537,835.7512117021216,
+                              -3.001718213271598,-14.10732176760596,
+                              -0.1071476874993932,0.2650733120790089,
+                              0.002569688298971444,-0.005655362659661236,
+                              -0.0006118639673359015,-2.015785581514091e-05
+                              ]
+            elif i==-5: 
+                parameters = [13244.15207434321,13692.18289393852,
+                              5334.8773462506,837.6431824069086,
+                              -6.497776108810427,-14.86280614026587,
+                              -0.04668780211173303,0.2907384254768075,
+                              0.001663194455252792,-0.006490683796035172,
+                              -0.0007023715428848584,-2.332590255955917e-05
+                              ]
+            elif i==5: 
+                parameters = [12509.38428946078,12861.69406116226,
+                              4972.044534351865,768.5587723166421,
+                              -8.728561677329289,-13.82532452477927,
+                              0.0135930873559063,0.2718600214394009,
+                              0.0004937922243827826,-0.006128022192926411,
+                              -0.0006515897934270276,-2.139863261256321e-05
+                              ]
+            else:
+                ValueError(i, 'i needs to be >=-5 and <=5')
             
-        References
-        ----------
-        .. [1] Kulmala et al., "Measurement of the nucleation of atmospheric 
-           aerosol particles", Nat. Protoc., vol. 7, pp. 1651-1667, 2012
-        """
-        dp = dp*1e-9
-        mx = 98.08
-        mair = 28.965
-        press_atmos = self.press_hpa/101.33
-        d_air = 19.7
-        d_x = 51.96
-        gas_constant = 8314.7
-        alpha = 1.0
-        
-        # diff. coeff. from Reid et al.
-        dif = ((0.001 * self.temp_kelvin**1.75 * np.sqrt(1/mair+1/mx))
-               /(p*(d_air**(1/3.)+d_x**(1/3.))**2)
-               )
-        lam = 3*np.sqrt(np.pi*mx/(8*gas_constant*self.temp_kelvin))*dif*1e-4
-        Kkn = 2*lam/dp
-        beta = (kn+1)/(1 + 0.377*kn + 4/(3*alpha)*kn + 4/(3*alpha)*kn**2)
-        
-        dintvals = [dp[k]+0.5*(dp[k+1]-dp[k]) for k in range(len(dp)-1)]
-        dintval0 = [dp[0]-0.5*(dp[1]-dp[0])]
-        dintvalmax = [dp[-1]+0.5*(dp[-1]-dp[-2])]
-        dintvals = dintval0+dintvals+dintvalmax
-        dintvals_diff_log = np.array([(np.log10(dintvals[k+1])
-                                       -np.log10(dintvals[k]))
-                                      for k in range(len(dintvals)-1)])
-        
-        dn = dn_dlogdp[:]*dintvals_diff_log[:]
-        
-        dcs = 2*np.pi*dif*dn[:]*beta[:]*dp[:]*1e2
-        cs = np.sum(dcs)
-        return CS, dCS
+            ln_f = 0
+            for n in range(len(parameters)):
+                ln_f = ln_f+parameters[n]*np.power(np.log10(dp),n)
+            return 10**ln_f

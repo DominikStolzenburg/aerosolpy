@@ -6,6 +6,7 @@ Created on Sun Feb 18 21:22:25 2024
 """
 
 import datetime as dt
+import numpy as np
 
 def matlab_to_datetime(matlab_datenum):
     """
