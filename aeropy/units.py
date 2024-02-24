@@ -50,3 +50,20 @@ def mugprom3_to_ppb(mug_pro_m3,
     """
     ppbv = mug_pro_m3/(12.187*molmass) * (temp_kelvin) 
     return ppbv
+
+def lpm_to_m3pers(lpm):
+    """
+    unit conversion for flow in liter per minute to m3 per s
+
+    Parameters
+    ----------
+    lpm : array_like
+        flow in [l min-1]
+
+    Returns
+    -------
+    array_like
+        flow in [m3 s-1]
+
+    """
+    return lpm*1e-3/60.

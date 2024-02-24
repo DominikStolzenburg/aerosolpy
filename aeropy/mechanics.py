@@ -234,7 +234,7 @@ class AerosolMechanics:
         psi = self.slipcorr(dp)/(dp**2)*(1/self._slipcorr_deriv(dp))
         return -1/psi
 
-    def diff_coeff(self, dp):
+    def diff_coeff_p(self, dp):
         """
         calculation of the diameter dependent diffusion coefficient of an
         aerosol particle according to [1]_
@@ -287,6 +287,10 @@ class AerosolMechanics:
         regression analysis of many experimental data. A few are listed here:
         C:15.9, H:2.31, O:6.11, N:4.54, S:22.9
         
+        Attention: There are many different expressions of this equation in 
+        literature (often using slightly different constants) or including/
+        not including the factor sqrt(2) from the reduced mass. 
+        
         References
         ----------
         .. [1] E.N. Fuller, P.D. Schettler, and J.C. Giddings, New method for 
@@ -297,10 +301,11 @@ class AerosolMechanics:
         mair = 28.965
         diff_vol_air = 19.7
         pres_atmos = self.pres_hpa/1013.3
+        ref_const = 0.001 # chosen that it gives cm2 s-1, value from Fuller
         
-        return (1e-4*(0.00143 * self.temp_kelvin**1.75 * np.sqrt(1/mair+1/mv))
+        return (ref_const * self.temp_kelvin**1.75 * np.sqrt(1/mair+1/mv)
                 /(pres_atmos*(diff_vol_air**(1/3.)+diff_vol_v**(1/3.))**2)
-                )
+                ) * 1e-4 # for output in m2 s-1
     
     def mfp_v(self, mv=98.08, diff_vol_v=51.96):
         """
@@ -321,8 +326,8 @@ class AerosolMechanics:
             mean free path of trace vapor in air [m]
 
         """
-        mfp_v = (3*np.sqrt(np.pi*mv/(8*8.314*self.temp_kelvin))
-                 *self.diff_coeff_v(mv=mv, diff_vol_v=diff_vol_v)
+        mfp_v = (3*self.diff_coeff_v(mv=mv, diff_vol_v=diff_vol_v)
+                 /np.sqrt((8*8.314*1e3*self.temp_kelvin)/(np.pi*mv))
                  )
         return mfp_v
         
@@ -494,7 +499,7 @@ class AerosolMechanics:
            1949
         """
         if np.isscalar(dp):
-            mu = 3.14159*self.diff_coeff(dp)*l_q_ratio
+            mu = 3.14159*self.diff_coeff_p(dp)*l_q_ratio
             eta = 0
             if(mu>0.02):
                 eta = (0.819*np.exp(-3.66*mu)
@@ -510,7 +515,7 @@ class AerosolMechanics:
                        )
         #non-scalars need different implementation
         else:    
-             mu = 3.14159*self.diff_coeff(dp)*l_q_ratio
+             mu = 3.14159*self.diff_coeff_p(dp)*l_q_ratio
              big_mu = mu>0.02
              big_mu = np.array(big_mu)
              mu_init = mu

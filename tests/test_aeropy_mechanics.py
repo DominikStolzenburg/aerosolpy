@@ -26,11 +26,22 @@ def test_a_function():
     assert am.a_function(1) == approx(2, rel=1e-2)
     assert am.a_function(1e5) == approx(1, rel=1e-2)
 
-def test_diff_coeff():
+def test_diff_coeff_p():
     # Hinds days 5.4e-8, but our code gives 5.3e-8, which is okay
     # we have full treatment of T-dependence in airviscosity
     am = ap.AerosolMechanics(temp_kelvin=293)
-    assert am.diff_coeff(10) == approx(5.3e-8, rel=1e-2)
+    assert am.diff_coeff_p(10) == approx(5.3e-8, rel=1e-2)
+    
+def test_diff_coeff_v():
+    # test against results from Hanson and Eisele 2000 for H2SO4
+    # 0.094 cm2 s-1 at 1 atm and 298 K, known to be a bit off from Fuller's
+    # method (see doi:10.5194/acp-14-9233-2014)
+    am = ap.AerosolMechanics(temp_kelvin=298)
+    assert am.diff_coeff_v() == approx(0.094e-4, rel=2e-1)
+
+def test_mfp_v():
+    am = ap.AerosolMechanics(temp_kelvin=298)
+    assert am.mfp_v() == approx(130e-9, rel=1e-2)
     
 def test_dp_to_zp():
     # use THABr dimer from doi:10.1016/j.jaerosci.2005.02.009 as reference

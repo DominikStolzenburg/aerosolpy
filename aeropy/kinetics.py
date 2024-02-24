@@ -65,8 +65,8 @@ class AerosolKinetics(AerosolMechanics):
         mj = (pi*rhoj/6.)*(dj*1e-9)**3
         ci = np.sqrt(8*1.380658e-23*self.temp_kelvin/(pi*mi))   
         cj = np.sqrt(8*1.380658e-23*self.temp_kelvin/(pi*mj)) 
-        mfp_i = 8*self.diff_coeff(di)/(pi*ci)
-        mfp_j = 8*self.diff_coeff(dj)/(pi*cj)
+        mfp_i = 8*self.diff_coeff_p(di)/(pi*ci)
+        mfp_j = 8*self.diff_coeff_p(dj)/(pi*cj)
         gi = (np.sqrt(2)/(3*di*1e-9*mfp_i) * ( (di*1e-9 + mfp_i)**3 
               - ( (di*1e-9)**2 + mfp_j**2)**(3./2.) ) 
               - (di*1e-9)
@@ -78,19 +78,20 @@ class AerosolKinetics(AerosolMechanics):
         corr1 = ((di*1e-9 + dj*1e-9) 
                  / (di*1e-9 + dj*1e-9 + 2*(gi**2+gj**2)**0.5)
                  )
-        corr2 = ((8*(self.diff_coeff(di)+self.diff_coeff(dj)))
+        corr2 = ((8*(self.diff_coeff_p(di)+self.diff_coeff_p(dj)))
                  /((ci**2+cj**2)**0.5 * (di*1e-9 + dj*1e-9))
                  )
         corr = 1./(corr1+corr2)
         collKernel = (2*pi
-                      * (self.diff_coeff(di)+self.diff_coeff(dj))
+                      * (self.diff_coeff_p(di)+self.diff_coeff_p(dj))
                       * (dj*1e-9+di*1e-9)
                       * corr
                       )
         return collKernel
 
     def coll_kernel_vp(self, dv, dp, rhov=1000, rhop=1000,
-                      alpha=1, diff_coeff_v=None,
+                      alpha=1, 
+                      diff_coeff_v=None,
                       dynamic_regime='transition',
                       mv=None): 
         """
@@ -108,7 +109,7 @@ class AerosolKinetics(AerosolMechanics):
             density of particle in [kg m-3], default 1000 (unit density)
         alpha : float, optional
             accomodation coefficient, between 0 and 1, dimless, default 1
-        Dv : float, optional
+        diff_coeff_v : float, optional
             diffusion coefficient of vapour in [m2 s-1], might be calculated 
             differently than diffusion coefficient of particle
         mv : float, optional
@@ -161,11 +162,12 @@ class AerosolKinetics(AerosolMechanics):
         mp = (np.pi*rhop/6.)*(dp*1e-9)**3
         cv = np.sqrt(8*1.380658e-23*self.temp_kelvin/(np.pi*mv))   
         cp = np.sqrt(8*1.380658e-23*self.temp_kelvin/(np.pi*mp))
-        if diff_coeff_v is not None:
-            diff_coeff_v = diff_coeff_v
+        if diff_coeff_v is None:
+            diff_coeff_v = self.diff_coeff_p(dv)
         else:
-            diff_coeff_v = self.diff_coeff(dv)
-        mfp_v_p = (3*(diff_coeff_v+self.diff_coeff(dp))
+            diff_coeff_v = diff_coeff_v
+            
+        mfp_v_p = (3*(diff_coeff_v+self.diff_coeff_p(dp))
                    / np.sqrt(cv**2+cp**2)
                    )
         Kn = 2*mfp_v_p/((dv+dp)*1e-9)
@@ -173,13 +175,13 @@ class AerosolKinetics(AerosolMechanics):
                   /(1 + 4/(3*alpha)*Kn + 0.337*Kn + 4/(3*alpha)*Kn**2)
                   )
         if dynamic_regime=='transition':
-            return (2*np.pi*(diff_coeff_v+self.diff_coeff(dp))
+            return (2*np.pi*(diff_coeff_v+self.diff_coeff_p(dp))
                     *(dv*1e-9+dp*1e-9)*beta_m
                     )
         elif dynamic_regime=='kinetic':
             return np.pi/4. * (dv*1e-9+dp*1e-9)**2 * (cv**2+cp**2)**(1./2.)
         elif dynamic_regime=='continuum':
-            return (2*np.pi*(diff_coeff_v+self.diff_coeff(dp))
+            return (2*np.pi*(diff_coeff_v+self.diff_coeff_p(dp))
                     *(dv*1e-9+dp*1e-9)
                     )
         else:
@@ -255,3 +257,101 @@ class AerosolKinetics(AerosolMechanics):
         term_3 = np.log((r**2-(ri+rj)**2)/(r**2-(ri-rj)**2))
         phi = -hamaker/6 * (term_1 + term_2 + term_3) 
         return phi  
+    
+    def coll_kernel_vp_vdw(self, dv, dp, 
+                           rhov=1000, rhop=1000, 
+                           hamaker = 5.2e-20,
+                           diff_coeff_v=None,
+                           method='sceats',
+                           dynamic_regime='transition'):
+        """
+        calculates the collision kernel inculuding collison enhancement 
+        according to [1]_ and [2]_ (method='sceats') or alternatively [3]_
+        (method='fuchs')
+    
+        Parameters
+        ----------
+        dv : float
+            diameter of vapor molecule in [nm]
+        dp : array_like of float
+            diameter of particle in [nm]
+        rhov : float, optional
+            density of vapor [kg m-3], default 1000
+        rhop : float, optional
+            density of particle [kg m-3], default 1000
+        hamaker : float, optional
+            Hamaker constant in [J], default 5.2e-20 (H2SO4)
+        diff_coeff_v : float, optional
+            diffusivity of vapor [m2 s-1], default None
+        method : str, optional
+            method for kernel calculation, default 'sceats'
+        dynamic_regime : str, optional
+            Knudsen number regime for calculations, default transition
+    
+        Returns
+        ----------
+        array_like of float
+            collision frequency in [m3 s-1]
+    
+        References
+        ----------
+        .. [1] M.G. Sceats, "Brownian Coagulation in Aerosols-The Role of Long 
+           Range Forces", J. Coll. Interf. Sci., vol. 129, pp. 105-112, 1989
+        .. [2] T.W. Chan and M. Mozurkewich, "Measurement of the coagulation 
+           rate constant for sulfuric acid particles as a function of particle 
+           size using tandem differential mobility analysis", J. Aersol Sci., 
+           vol. 32, pp. 321-339, 2001
+        .. [3] N.A. Fuchs and A. G. Sutugin, "Coagulation rate of highly 
+           dispersed aerosols", J. Coll. Sci., vol 20., pp. 492-500, 1965 
+        """
+        dv = dv*1e-9
+        dp = dp*1e-9
+        k = 1.380658e-23 
+        mv = (3.14159*rhov/6.)*dv**3
+        mp = (3.14159*rhop/6.)*dp**3
+        cv = np.sqrt(8*k*self.temp_kelvin/(np.pi*mv)) 
+        cp = np.sqrt(8*k*self.temp_kelvin/(np.pi*mp)) 
+        if diff_coeff_v is not None:
+            diff_coeff_v = diff_coeff_v
+        else: # if nothing specified calculate as if vapor is particle
+            diff_coeff_v = self.diff_coeff_p(dv)
+        diff_coeff_p = self.diff_coeff_p(dp*1e9)        
+        
+        if method=='sceats':
+            a_prime = hamaker/(k*self.temp_kelvin) * (4*dp*dv)/((dp+dv)**2)
+            E_inf = (1 
+                     + ( np.sqrt(a_prime/3.) / (1+0.0151*np.sqrt(a_prime)) ) 
+                     - 0.186*np.log(1+a_prime) - 0.0163*(np.log(1+a_prime)**3)
+                     )
+            E_0 = 1+0.0757*(np.log(1+a_prime))+0.0015*((np.log(1+a_prime))**3)
+            kk = np.pi/4. * ((dp+dv)**2) * np.sqrt(cp**2+cv**2) * E_inf
+            kd = 2 * np.pi * (dp+dv) * (diff_coeff_p+diff_coeff_v) * E_0
+            kt = kk* (np.sqrt(1+(kk/(2*kd))**2) - (kk/(2*kd)))        
+        elif method=='fuchs':
+            rv = dv/2.
+            rp = dp/2.
+            r = np.logspace(np.log10((rv+rp)),-7,10000)   
+            phi = self._vdW_potential(r, rv, rp, hamaker)
+            b = r*np.sqrt(1+2*np.abs(phi)/(3*1.38e-23*self.temp_kelvin))
+            b_crit = np.nanmin(b)
+            E_inf = (b_crit/(rv+rp))**2 
+            kk = np.pi/4. * ((dp+dv)**2) * np.sqrt(cp**2+cv**2) * E_inf
+            a_prime = hamaker/(k*self.temp_kelvin) * (4*dp*dv)/((dp+dv)**2)
+            E_0 = 1+0.0757*(np.log(1+a_prime))+0.0015*((np.log(1+a_prime))**3)
+            kd = 2 * np.pi * (dp+dv) * (diff_coeff_p+diff_coeff_v) * E_0
+            kt = kk* (np.sqrt(1+(kk/(2*kd))**2) - (kk/(2*kd)))   
+        else:
+            raise ValueError(method,
+                             ("sceats or fuchs")
+                             )
+        
+        if dynamic_regime=='transition':
+            return kt
+        elif dynamic_regime=='kinetic':
+            return kk
+        elif dynamic_regime=='continuum':
+            return kd
+        else:
+            raise ValueError(dynamic_regime,
+                             ("transition, kinetic or continuum")
+                             )
