@@ -298,14 +298,21 @@ class AerosolMechanics:
            Chem. 8, 5, 18–27, 1966
 
         """
+
         mair = 28.965
         diff_vol_air = 19.7
         pres_atmos = self.pres_hpa/1013.3
         ref_const = 0.001 # chosen that it gives cm2 s-1, value from Fuller
+        red_mass = np.sqrt(1/mair+1/mv)
+            
+        diff_coeff_v = ((ref_const * self.temp_kelvin**1.75 * red_mass
+                        /(pres_atmos*(diff_vol_air**(1/3.)
+                                      +diff_vol_v**(1/3.))**2
+                          )
+                         ) * 1e-4  # for output in m2 s-1
+                        )
+        return diff_coeff_v
         
-        return (ref_const * self.temp_kelvin**1.75 * np.sqrt(1/mair+1/mv)
-                /(pres_atmos*(diff_vol_air**(1/3.)+diff_vol_v**(1/3.))**2)
-                ) * 1e-4 # for output in m2 s-1
     
     def mfp_v(self, mv=98.08, diff_vol_v=51.96):
         """

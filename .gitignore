@@ -1,4 +1,14 @@
 #ignore the spyder IDE project files
 .spyproject/
+
 #ignore conda environment of project
 env/
+
+#ignore .egg-info files which are used for local installation
+*.egg-info/
+
+# Sphinx documentation
+docs/_build/
+
+# Unit test / coverage reports
+.pytest_cache/

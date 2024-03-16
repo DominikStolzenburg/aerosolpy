@@ -1,3 +1,5 @@
+"""aeropy: a python package for aerosol science calculations""" 
+
 # base functions from math, time, units modules 
 # are assigned to aeropy namespace
 
