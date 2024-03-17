@@ -9,34 +9,47 @@ typical unit conversion, math operations and time operations (as aerosol data of
 
 aeropy also includes classes for calculations of more complex aerosol mechanics and kinetics.
 
-<! aeropy also contains the submodule instruments which provides classes corresponding to typical aerosol instruments >
-<! aeropy also contains the submodule growth which can be used to calculate nanoparticle growth rates from vapor concentrations. >
+### Submodules
+
+1. aeropy includes the submodule `aeropy.instruments` which provides functionality related to typical aerosol measurement devices.
+   currently supports differential mobility analyzers (DMAs) or condensation particle counters (CPCs). 
+
 
 ## Installation
 
 AerosolPython is intended to be a python package indexed in PyPi and installation will be made possible via pip. 
 As soon as this is available it can be installed via:
-'pip install aerosolpython'
+`pip install aerosolpython`
 
 Currently this is not impelmented yet and the package needs to be installed from source. A setup.py file is included in the package. 
-Download .tar.gz file from [gitlab repository of aerosolpython](https://gitlab.tuwien.ac.at/dominik.stolzenburg/aerosolpython).
-Go to the path of your current python environment. In conda use:
-'conda info --envs'
-to see where your environment is installed. In that path find the absolute path to python.exe, for example:
-'"C:\Program Files\Anaconda3\python.exe"'
-Now, run the following command:
-'<absolute path to python.exe> -m pip install <path to tar.gz>'
-Note that <path to tar.gz> can be relative, absolute and even an online link.
+Please find the source code available in the public [GitLab repository of Aerosolpython](https://gitlab.tuwien.ac.at/dominik.stolzenburg/aerosolpython) hosted by TU Wien. 
 
-##Prerequisits
+There are two options for installation. 
+
+1. Download .tar.gz file from GitLab.
+   Go to the path of your current python environment. In conda use:
+   `conda info --envs`
+   to see where your environment is installed. In that path find the absolute path to python.exe, for example:
+   `"C:\Program Files\Anaconda3\python.exe"`
+   Now, run the following command:
+   `<absolute path to python.exe> -m pip install <path to tar.gz>`
+   Note that <path to tar.gz> can be relative, absolute and even an online link.
+
+2. Clone the repository from GitLab using e.g., ssh. 
+   Go to the path of the clondes repository and run:
+   `python setup.py install`
+   command or its usual variants (`python setup.py install --user`,
+   `python setup.py install --prefix=/PATH/TO/INSTALL/DIRECTORY`, etc.)
+
+## Prerequisits
 
 Python 3 needs to be used.
 
 Current prerequisits:
 
-'numpy>=1.21'
-'scipy>=1.7.3'
-'pandas>=1.4.2'
+`numpy>=1.21`
+`scipy>=1.7.3`
+`pandas>=1.4.2`
 
 ## Usage
 
@@ -71,3 +84,4 @@ Licensed under the MIT license. See also LICENSE file.
 ## Project status
 
 Almost all code already exists, but the repo needs to be properly build, and documentations needs to be completed. 
+Release 0.1.0 is being prepared currently. 
