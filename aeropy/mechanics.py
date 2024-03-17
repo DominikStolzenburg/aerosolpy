@@ -15,12 +15,6 @@ class AerosolMechanics:
     a class defining aerosol mechanics depending on ambient temperature
     and pressure
     
-    Extended Summary
-    ----------
-    contains a methods needed for any kind of electrical mobility calculations
-    useful for DMAs and SMPS systems
-    all functions take mobility equivalent diameter in [nm] as dp
-    
     Parameters
     ----------
     temp_kelvin : float, optional
@@ -46,7 +40,7 @@ class AerosolMechanics:
         Viscosity of air, in [kg m-1 s-1]
     
     Notes
-    ----------
+    -----
     The derivation of the air viscosity and mean free path temperature 
     dependence are taken from ISO15900, the parametrization can be found in
     [1]_
@@ -122,7 +116,7 @@ class AerosolMechanics:
         
     def slipcorr(self, dp):
         """
-        calculates the Cunnigham slip correction factor [1]_
+        calculates the Cunnigham slip correction factor [2]_
 
         Parameters
         ----------
@@ -130,22 +124,22 @@ class AerosolMechanics:
             particle diameter in [nm]
         
         Returns
-        ----------
+        -------
         array_like
             Cunningham slip correction, dimless
             
         Notes
-        ----------
-        [2]_ provides a slightly different parametrization
+        -----
+        [3]_ provides a slightly different parametrization
         1.0 + Kn*(1.257+0.4*np.exp(-1.1/Kn))
         differences are however negligible
         
         References
         ----------
-        .. [1] Cunningham, E., "On the velocity of steady fall of spherical 
+        .. [2] Cunningham, E., "On the velocity of steady fall of spherical 
            particles through fluid medium," Proc. Roy. Soc. A, vol. 83,
            iss. 357, 1910
-        .. [2] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
+        .. [3] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
            From Air Pollution to Climate Change", John Wiley & Sons, Inc., 
            New Jersey, 2006
         """
@@ -162,7 +156,7 @@ class AerosolMechanics:
             particle diameter in [nm]
         
         Returns
-        ----------
+        -------
         array_like
             derivative of the Cunningham slip correction with respect to 
             diameter, dimless
@@ -179,15 +173,15 @@ class AerosolMechanics:
 
     def psi_function(self, dp):
         """
-        calculates the Psi-function according to [1]_
+        calculates the Psi-function according to [4]_
         
-        Parameter
+        Parameters
         ----------
         dp : array_like
             particle diameter in [nm]
         
         Returns
-        ----------
+        -------
         array_like
             psi-function, i.e. derivative of log mobility diameters towards 
             log mobility
@@ -198,7 +192,7 @@ class AerosolMechanics:
         
         References
         ----------
-        .. [1] M.R. Stolzenburg, P.H. McMurry, "Equations Governing Single and 
+        .. [4] M.R. Stolzenburg, P.H. McMurry, "Equations Governing Single and 
            Tandem DMA Configurations and a New Lognormal Approximation to 
            the Transfer Function", Aerosol Sci. Tech., vol. 42, iss. 6, pp.
            421-432, 2008
@@ -208,15 +202,15 @@ class AerosolMechanics:
 
     def a_function(self, dp):
         """
-        calculates the a-function according to [1]_
+        calculates the a-function according to [5]_
         
-        Parameter
+        Parameters
         ----------
         dp : array_like
             particle diameter in [nm]
         
         Returns
-        ----------
+        -------
         array_like
             a-function, i.e. inverse of psi-function
         
@@ -226,7 +220,7 @@ class AerosolMechanics:
         
         References
         ----------
-        .. [1] M.R. Stolzenburg, P.H. McMurry, "Equations Governing Single and 
+        .. [5] M.R. Stolzenburg, P.H. McMurry, "Equations Governing Single and 
            Tandem DMA Configurations and a New Lognormal Approximation to 
            the Transfer Function", Aerosol Sci. Tech., vol. 42, iss. 6, pp.
            421-432, 2008
@@ -237,21 +231,21 @@ class AerosolMechanics:
     def diff_coeff_p(self, dp):
         """
         calculation of the diameter dependent diffusion coefficient of an
-        aerosol particle according to [1]_
+        aerosol particle according to [6]_
         
-        Parameter
+        Parameters
         ----------
         dp : array_like
             particle diameter in [nm]
         
         Returns
-        ----------
+        -------
         array_like
             diffusion coefficient in [m2 s-1]
         
         References
         ----------
-        .. [1] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
+        .. [6] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
            From Air Pollution to Climate Change", John Wiley & Sons, Inc., 
            New Jersey, 2006
         """
@@ -264,7 +258,7 @@ class AerosolMechanics:
     def diff_coeff_v(self, mv=98.08, diff_vol_v=51.96):
         """
         calculation of the diffusion coefficient of a trace vapor in air
-        following the method from [1]_
+        following the method from [7]_
 
         Parameters
         ----------
@@ -281,7 +275,7 @@ class AerosolMechanics:
             diffusion coefficient of trace vapor in air [m2 s-1]
             
         Notes
-        ----------
+        -----
         The diffusion volume of a trace gas is found by summing atomic 
         diffusion volumes. These atomic parameters were determined by a
         regression analysis of many experimental data. A few are listed here:
@@ -293,7 +287,7 @@ class AerosolMechanics:
         
         References
         ----------
-        .. [1] E.N. Fuller, P.D. Schettler, and J.C. Giddings, New method for 
+        .. [7] E.N. Fuller, P.D. Schettler, and J.C. Giddings, New method for 
            prediction of binary gas phase diffusion coefficients, Ind. Eng. 
            Chem. 8, 5, 18–27, 1966
 
@@ -352,7 +346,7 @@ class AerosolMechanics:
             number of charges carried by particle
         
         Returns
-        ----------
+        -------
         array_like
             electrical mobility zp in [m2 V-1 s-1]
         """
@@ -407,7 +401,7 @@ class AerosolMechanics:
     def dp_to_zp_approx(self, dp):
         """
         calculates electrical mobility from particle diameter with the 
-        appoximation from [1]_
+        appoximation from [8]_
         
         Parameters
         ----------
@@ -415,13 +409,13 @@ class AerosolMechanics:
             particle diameter in [nm]
             
         Returns
-        ----------
+        -------
         array_like
             electrical mobility zp in [m2 V-1 s-1]
         
         See also
         ----------
-        aeropy.AerosolMechanics.DtoZ
+        aeropy.AerosolMechanics.dp_to_zp
         
         Notes
         ----------
@@ -433,7 +427,7 @@ class AerosolMechanics:
         
         References
         ----------
-        .. [1] J.M. Maekelae et al., "Comparison of mobility equivalent 
+        .. [8] J.M. Maekelae et al., "Comparison of mobility equivalent 
            diameter with Kelvin-Thomson diameter using ion mobility data",
            J. Chem. Phys., vol. 105, pp.1562, 1996
         """
@@ -445,7 +439,7 @@ class AerosolMechanics:
     def zp_to_dp_approx(self, zp): 
         """
         calculates particle diameter from electrical mobility with the 
-        appoximation from [1]_
+        appoximation from [9]_
         
         Parameters
         ----------
@@ -459,7 +453,7 @@ class AerosolMechanics:
         
         See also
         ----------
-        aeropy.AerosolMechanics.ZtoD
+        aeropy.AerosolMechanics.zp_to_dp
         
         Notes
         ----------
@@ -468,7 +462,7 @@ class AerosolMechanics:
         
         References
         ----------
-        .. [1] J.M. Maekelae et al., "Comparison of mobility equivalent 
+        .. [9] J.M. Maekelae et al., "Comparison of mobility equivalent 
            diameter with Kelvin-Thomson diameter using ion mobility data",
            J. Chem. Phys., vol. 105, pp.1562, 1996
         """
@@ -479,12 +473,8 @@ class AerosolMechanics:
     
     def diff_loss(self, dp, l_q_ratio):
         """
-        diffusional losses in straight tube according to [1]_
+        diffusional losses in straight tube according to [10]_
         
-        Extended Summary
-        ----------
-        uses the length L divided by flow Q as input, where L is the tube  
-        length in [m] and Q the flow in [m3 s-1]
         
         Parameters
         ----------
@@ -495,14 +485,19 @@ class AerosolMechanics:
             i.e. l_q_ratio [s m-2]
         
         Returns
-        ---------
+        -------
         array_like
             survival probability (between 0 and 1), dimless
         
+        Notes
+        -----
+        uses the length L divided by flow Q as input, where L is the tube  
+        length in [m] and Q the flow in [m3 s-1]
+        
         References
         ----------
-        .. [1] P.Gormley, M.Kennedy, "Diffusion from a Stream Flowing through a
-           Cylindrical Tube", P. Roy. Irish Acad. A, vol. 52, pp. 163-169,
+        .. [10] P.Gormley, M.Kennedy, "Diffusion from a Stream Flowing through 
+           a Cylindrical Tube", P. Roy. Irish Acad. A, vol. 52, pp. 163-169,
            1949
         """
         if np.isscalar(dp):
@@ -543,7 +538,7 @@ class AerosolMechanics:
     
     def charge_prob(self, dp, i, method='wiedensohler'):
         """
-        steady-state charging probability according to [1]_ or [2]_
+        steady-state charging probability according to [11]_ or [12]_
         
         Parameters
         ----------
@@ -555,51 +550,47 @@ class AerosolMechanics:
             method used for caclulation, default 'wiedensohler'
         
         Returns
-        ----------
+        -------
         array_like
             charging probability (between 0 and 1), dimless
         
         Notes
-        ----------
+        -----
         method 'wiedensohler' assumes:
         assumes Z+ = 1.34x10^(-4) m2 V-1 s-1
         assumes Z- = 1.60x10^(-4) m2 V-1 s-1
         assumes m+ = 140 amu
         assumes m- = 101 amu
-        for i>2 and i<-2 only valid above 25 nm and according to [2]_
+        for i>2 and i<-2 only valid above 25 nm and according to [12]_
         
         coefficients paramters_1[4] and parameters_2[5] are slightly different 
-        from [1]_ and given as in ISO15900
+        from [11]_ and given as in ISO15900
         
         method 'flagan':
-        incldues an improved three-body trapping, see [3]_
+        incldues an improved three-body trapping, see [13]_
         validity for i=+/-2 down to 5.9 nm
         validity for i=+/-3 down to 17 nm
         validity for i=+/-4 down to 28 nm
         validity for i=+/-5 down to 59 nm
         
         calculation are done in terms of a particle radii, which is different
-        from the Wiedensohler Fit [2]_, this method takes that into account and 
-        divides the input by 2
+        from the Wiedensohler Fit [12]_, this method takes that into account  
+        and divides the input by 2
         
         Raises
-        ----------
+        ------
         TypeError
             If charging state is not int
         
-        See also:
-        ----------
-        aeropy.AerosolMechanics.chargingprob_flagan
-        
         References
         ----------
-        .. [1] A. Wiedensohler, "An approximation of the bipolar charge 
+        .. [11] A. Wiedensohler, "An approximation of the bipolar charge 
            distribution for particles in the submicron size range", J. 
            Aerosol Sci., vol. 19, iss. 3, pp. 387-389, 1988
-        .. [2] R. Gunn, R.H. Woessner, "Measurements of the Systematic 
+        .. [12] R. Gunn, R.H. Woessner, "Measurements of the Systematic 
            Electrification of Aerosols", J. Colloid Sci., vol. 11, pp.
            254-259, 1956
-        .. [3] X. Lopez-Yglesias, R.C. Flagan, "Ion–Aerosol Flux Coefficients 
+        .. [13] X. Lopez-Yglesias, R.C. Flagan, "Ion–Aerosol Flux Coefficients 
            and the Steady-State Charge Distribution of Aerosols in a 
            Bipolar Ion Environment", Aerosol Sci. Tech., vol. 47, iss. 6,
            pp. 688-704, 2013

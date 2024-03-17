@@ -58,6 +58,10 @@ aeropy can be currently used for:
 2. aerosol kinetics calculations such as collision kernels
 3. aerosol utilities such as unit conversions, math operations (e.g., integration of size distributions)
 
+Once installed as outlined above you can simply import `aerosolpython` using its import name `aeropy` with the recommended abbreviation:
+
+`import aeropy as ap`
+
 ## Support
 
 The package is maintained by Dominik Stolzenburg. All requests should be directed to dominik.stolzenburg@tuwien.ac.at

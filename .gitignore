@@ -8,7 +8,7 @@ env/
 *.egg-info/
 
 # Sphinx documentation
-docs/_build/
+docs/build/
 
 # Unit test / coverage reports
 .pytest_cache/

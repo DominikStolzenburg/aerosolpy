@@ -44,18 +44,18 @@ class AerosolKinetics(AerosolMechanics):
             accomodation coefficient, between 0 and 1, dimless
         
         Returns
-        ----------
+        -------
         array_like
             collision kernel in m3 s-1 yielding collision frequency when 
             multiplied by the two concentrations of the two collision partners
         
         Notes
         ----------
-        calculations follow chapter 13.3.1.2 pp. 547-549 of [1]_
+        calculations follow chapter 13.3.1.2 pp. 547-549 of [14]_
             
         References
         ----------
-        .. [1] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
+        .. [14] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
            From Air Pollution to Climate Change", John Wiley & Sons, Inc., 
            New Jersey, 2006
         
@@ -120,37 +120,37 @@ class AerosolKinetics(AerosolMechanics):
             
         
         Returns
-        ----------
+        -------
         array_like
             collision kernel in [m3 s-1] yielding collision frequency when 
             multiplied by the two concentrations of the two collision partners
         
         Notes
-        ----------
-        mean free path and Knudsen number are assumed to follow [1]_, which 
+        -----
+        mean free path and Knudsen number are assumed to follow [15]_, which 
         takes into account that vapour and particle size can be of similar
-        magnitude, which is different to the classical approach of [2]_
-        and [3]_
+        magnitude, which is different to the classical approach of [16]_
+        and [17]_
         
         The collison kernel can also be defined from the free molecular regime 
         collision kernel as basis and a correction factor gamma is used
         This is found by equating the kernels for the free molecular regime 
-        with the kernel for the contiuum regime. This is done e.g. in [4]_, 
+        with the kernel for the contiuum regime. This is done e.g. in [18]_, 
         but both approaches are equivalent.
                 
             
         References
         ----------
-        .. [1] K.E.J. Lehtinen, M. Kulmala, "A model for particle formation and
-           growth in the atmosphere with molecular resolution in size", 
+        .. [15] K.E.J. Lehtinen, M. Kulmala, "A model for particle formation 
+           and growth in the atmosphere with molecular resolution in size", 
            Atmos. CHem. Phys., vol. 3, pp. 251-257
-        .. [2] N.A. Fuchs, A.G. Sutugin, "High dispersed aerosols", in Topics
+        .. [16] N.A. Fuchs, A.G. Sutugin, "High dispersed aerosols", in Topics
            in Current Aerosol Research, G.M Hindy and J.R.Brock (eds.),
            Pergamon, New York, pp. 1-60, 1971
-        .. [3] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
+        .. [17] J.H. Seinfeld, S.N. Pandis, "Atmospheric Chemistry and Pysics: 
            From Air Pollution to Climate Change", John Wiley & Sons, Inc., 
            New Jersey, 2006
-        .. [4] T. Nieminen et al., "Sub-10nm particle growth by vapor 
+        .. [18] T. Nieminen et al., "Sub-10nm particle growth by vapor 
            condensation – effects of vapor molecule size and particle 
            thermal speed", Atmos. Chem. Phys., vol. 10, pp. 9773-9779, 2010
 
@@ -191,7 +191,7 @@ class AerosolKinetics(AerosolMechanics):
     
     def condensation_sink(self, dp, dn_dlogdp):
         """
-        calculates condensation sink according to [1]_
+        calculates condensation sink according to [19]_
         
         Parameters
         ----------
@@ -201,7 +201,7 @@ class AerosolKinetics(AerosolMechanics):
             size distribution in dN/dlogDp
             
         Returns
-        ----------
+        -------
         float
             condensation sink (CS) in [s-1]
         np.ndarray
@@ -209,7 +209,7 @@ class AerosolKinetics(AerosolMechanics):
             
         References
         ----------
-        .. [1] Kulmala et al., "Measurement of the nucleation of atmospheric 
+        .. [19] Kulmala et al., "Measurement of the nucleation of atmospheric 
            aerosol particles", Nat. Protoc., vol. 7, pp. 1651-1667, 2012
         """
         dp = dp*1e-9
@@ -248,7 +248,7 @@ class AerosolKinetics(AerosolMechanics):
             Hamaker constant in [j]
         
         Returns
-        ----------
+        -------
         float
             potential at distance r
         """
@@ -266,7 +266,7 @@ class AerosolKinetics(AerosolMechanics):
                            dynamic_regime='transition'):
         """
         calculates the collision kernel inculuding collison enhancement 
-        according to [1]_ and [2]_ (method='sceats') or alternatively [3]_
+        according to [20]_ and [21]_ (method='sceats') or alternatively [22]_
         (method='fuchs')
     
         Parameters
@@ -295,13 +295,13 @@ class AerosolKinetics(AerosolMechanics):
     
         References
         ----------
-        .. [1] M.G. Sceats, "Brownian Coagulation in Aerosols-The Role of Long 
+        .. [20] M.G. Sceats, "Brownian Coagulation in Aerosols-The Role of Long 
            Range Forces", J. Coll. Interf. Sci., vol. 129, pp. 105-112, 1989
-        .. [2] T.W. Chan and M. Mozurkewich, "Measurement of the coagulation 
+        .. [21] T.W. Chan and M. Mozurkewich, "Measurement of the coagulation 
            rate constant for sulfuric acid particles as a function of particle 
            size using tandem differential mobility analysis", J. Aersol Sci., 
            vol. 32, pp. 321-339, 2001
-        .. [3] N.A. Fuchs and A. G. Sutugin, "Coagulation rate of highly 
+        .. [22] N.A. Fuchs and A. G. Sutugin, "Coagulation rate of highly 
            dispersed aerosols", J. Coll. Sci., vol 20., pp. 492-500, 1965 
         """
         dv = dv*1e-9
