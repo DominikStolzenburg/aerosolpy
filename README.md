@@ -66,6 +66,10 @@ Once installed as outlined above you can simply import `aerosolpython` using its
 
 The package is maintained by Dominik Stolzenburg. All requests should be directed to dominik.stolzenburg@tuwien.ac.at
 
+## Documentation
+
+Up-to-date Documentation and full API is hosted on [readthedocs.io](https://aerosolpython.readthedocs.io/en/latest/)
+
 ## Roadmap
 
 1) Full implementation of above described functionalization. 
