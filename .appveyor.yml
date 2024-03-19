@@ -1,25 +1,13 @@
 build: off
 
 environment:
-  MINICONDA: C:\\Miniconda37-x64
-
-  matrix:
-    - PYTHON_VERSION: 3.9
-      NUMPY_VERSION: 1.21.5
+  PYTHON: "C:\\Python37"
 
 install:
-  - cmd: call %MINICONDA%\Scripts\activate.bat
-  - cmd: conda.exe update --yes --quiet conda
-  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
-  - conda config --set always_yes yes --set changeps1 no
-  - conda info -a
-  - "conda create -n test-environment python=%PYTHON_VERSION% numpy==%NUMPY_VERSION% scipy"
-  - activate test-environment
-  - python setup.py develop"
-
-before_test:
-  - pip install pytest
-  - pip install pytest-cov
+  - "set PATH=%PATH%;%PYTHON%\\Scripts"
+  - "%PYTHON%\\python.exe -m pip install pytest"
+  - "%PYTHON%\\python.exe -m pip install pytest-cov"
+  - "%PYTHON%\\python.exe setup.py develop"
 
 test_script:
   - pytest -v tests/ --cov=aerosolpy/
