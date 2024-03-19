@@ -1,7 +1,7 @@
 build: off
 
 environment:
-  MINICONDA: C:\\Miniconda39-x64
+  MINICONDA: C:\\Miniconda37-x64
 
   matrix:
     - PYTHON_VERSION: 3.9
