@@ -1,27 +1,31 @@
-name: Python Package Using Anaconda
-
-on: [push]
+name: Github Actions in Windows
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.9.12
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9.12
+        python-version: 3.9
     - name: Install dependencies
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        $CONDA/bin/conda install -n base numpy==1.21.5
-        $CONDA/bin/conda install -n base pandas==1.21.5
-        $CONDA/bin/conda install -n base scipy==1.7.3
-    - name: Install package
+        C:\Miniconda\condabin\conda.bat env update --file build_env.yml --name base
+        C:\Miniconda\condabin\conda.bat init powershell
+    - name: Lint with flake8
       run: |
-        $CONDA/bin/python setup.py 
+        # Activate the base environment
+        C:\Miniconda\condabin\conda.bat activate base
+        C:\Miniconda\condabin\conda.bat install flake8
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        conda install pytest
-        $CONDA/bin/pytest
+        # Activate the base environment
+        C:\Miniconda\condabin\conda.bat activate base
+        C:\Miniconda\condabin\conda.bat install pytest
+        pytest .\tests
