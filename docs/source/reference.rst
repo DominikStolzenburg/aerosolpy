@@ -1,21 +1,21 @@
 API reference
 =============
 
-``aeropy``
+``aerosolpy``
 ----------
 
-.. autofunction:: aeropy.integrate_dx_dlogdp
+.. autofunction:: aerosolpy.integrate_dx_dlogdp
 
-.. autofunction:: aeropy.matlab_to_datetime
+.. autofunction:: aerosolpy.matlab_to_datetime
 
-.. autofunction:: aeropy.ppt_to_percm3
+.. autofunction:: aerosolpy.ppt_to_percm3
 
-.. autofunction:: aeropy.mugprom3_to_ppb
+.. autofunction:: aerosolpy.mugprom3_to_ppb
 
-.. autofunction:: aeropy.lpm_to_m3pers
+.. autofunction:: aerosolpy.lpm_to_m3pers
 
-.. autoclass:: aeropy.AerosolMechanics
+.. autoclass:: aerosolpy.AerosolMechanics
    :members:
 
-.. autoclass:: aeropy.AerosolKinetics
+.. autoclass:: aerosolpy.AerosolKinetics
    :members:

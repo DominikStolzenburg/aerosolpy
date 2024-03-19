@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .context import aeropy as ap
+from .context import aerosolpy as ap
 from pytest import approx
 import warnings
 

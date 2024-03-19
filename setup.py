@@ -11,16 +11,16 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name = "aerosolpython",
+    name = "aerosolpy",
     version = "0.1.0",
     author = "Dominik Stolzenburg",
     author_email = "dominik.stolzenburg@tuwien.ac.at",
-    description = ("AerosolPython (aeropy) is a collection of functions and" 
+    description = ("aerosolpy is a collection of functions and" 
                    "classes useful in calculations related to aerosol science"),
     long_description = long_description,
     long_description_content_type="text/markdown",
-    packages = ["aeropy"],
-    url = "https://gitlab.tuwien.ac.at/dominik.stolzenburg/aerosolpython",
+    packages = ["aerosolpy"],
+    url = "https://github.com/DominikStolzenburg/aerosolpy",
     license = "MIT",
     classifiers = ["Intended Audience :: Science/Research",
                    "Programming Language :: Python :: 3.9",

@@ -5,7 +5,7 @@ Created on Wed Feb 21 11:28:48 2024
 @author: domin
 """
 
-from .context import aeropy as ap
+from .context import aerosolpy as ap
 from pytest import approx
 import numpy as np
 

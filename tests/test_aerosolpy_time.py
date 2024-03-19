@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from .context import aeropy as ap
-from pytest import approx
+from .context import aerosolpy as ap
 import datetime as dt
 
 def test_matlab_to_datetime():

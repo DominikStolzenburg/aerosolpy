@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('./../..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'aeropy'
+project = 'aerosolpy'
 copyright = '2024, Dominik Stolzenburg'
 author = 'Dominik Stolzenburg'
 
@@ -34,7 +34,7 @@ release = '0.1.0'
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon'
 ]
 
-autodoc_mock_imports = ['numpy'
+autodoc_mock_imports = ['numpy','scipy','pandas'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

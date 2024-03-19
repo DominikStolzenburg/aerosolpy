@@ -5,7 +5,7 @@ Created on Sun Feb 18 22:38:51 2024
 @author: domin
 """
 
-from .context import aeropy as ap
+from .context import aerosolpy as ap
 from pytest import approx
 
 def test_ppt_to_percm3():

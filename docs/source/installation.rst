@@ -5,24 +5,27 @@ Naming convention
 -----------------
 
 Please note that the package described here is going to be indexed on PyPI
-as ``aerosolpython``.
-However, throughout this manual it will be referenced by its
-import name ``aeropy``
+as ``aerosolpy`` and can be pip installed and imported under this name. 
+
+Earlier, unofficial versions were distributed as ``aeropy``. 
+The usage of this is deprecated and does not work with this version of 
+``aerosolpy``
+
 
 
 Dependencies
 ------------
 
-``aeropy`` requires the use of `numpy <https://numpy.org/>`__,
+``aerosolpy`` requires the use of `numpy <https://numpy.org/>`__,
 `scipy <https://scipy.org/>`__, and `pandas <https://pandas.pydata.org/>`__.
 
 
 Installation
 ------------
 
-``aeropy`` is currently not yet available on PyPI, but it can be
+``aerosolpy`` is currently not yet available on PyPI, but it can be
 installed by downloading the source code or cloning the  
-`GitLab repository <https://gitlab.tuwien.ac.at/dominik.stolzenburg/aerosolpython>`__ 
+`GitHub repository <https://github.com/DominikStolzenburg/aerosolpy>`__ 
 and running the standard::
 
        python setup.py install

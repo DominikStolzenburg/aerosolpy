@@ -5,7 +5,7 @@ Created on Thu Feb 22 10:41:35 2024
 @author: domin
 """
 import numpy as np
-from aeropy.mechanics import AerosolMechanics
+from aerosolpy.mechanics import AerosolMechanics
 
 class AerosolKinetics(AerosolMechanics):
     """

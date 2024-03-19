@@ -1,28 +1,37 @@
-# AerosolPython
+# aerosolpy
 
-The AerosolPython package provides the **aeropy** python framework for conducting Aerosol Physics and Chemistry computations.
+The **aerosolpy** package provides a python framework for 
+conducting Aerosol Physics and Chemistry computations.
 
 ## Description
 
-aeropy provides functionality for calculating aerosol related basic functions:
-typical unit conversion, math operations and time operations (as aerosol data often deal with time series)
+aerosolpy provides functionality for calculating aerosol related 
+basic functions:
+typical unit conversion, math operations and time operations 
+(as aerosol data often deal with time series)
 
-aeropy also includes classes for calculations of more complex aerosol mechanics and kinetics.
+aerosolpy also includes classes for calculations of more complex aerosol 
+mechanics and kinetics.
 
 ### Submodules
 
-1. aeropy includes the submodule `aeropy.instruments` which provides functionality related to typical aerosol measurement devices.
-   currently supports differential mobility analyzers (DMAs) or condensation particle counters (CPCs). 
+1. aerosolpy includes the submodule `aerosolpy.instr` which provides 
+   functionality related to typical aerosol measurement devices.
+   Currently supports differential mobility analyzers (DMAs) or 
+   condensation particle counters (CPCs). 
 
 
 ## Installation
 
-AerosolPython is intended to be a python package indexed in PyPi and installation will be made possible via pip. 
+aerosolpy is intended to be a python package indexed in PyPi 
+and installation will be made possible via pip. 
 As soon as this is available it can be installed via:
-`pip install aerosolpython`
+`pip install aerosolpy`
 
-Currently this is not impelmented yet and the package needs to be installed from source. A setup.py file is included in the package. 
-Please find the source code available in the public [GitLab repository of Aerosolpython](https://gitlab.tuwien.ac.at/dominik.stolzenburg/aerosolpython) hosted by TU Wien. 
+Currently this is not impelmented yet and the package 
+needs to be installed from source. A setup.py file is included in the package. 
+Please find the source code available in the public 
+[GitHub repository of aerosolpy](https://github.com/DominikStolzenburg/aerosolpy). 
 
 There are two options for installation. 
 
@@ -53,22 +62,26 @@ Current prerequisits:
 
 ## Usage
 
-aeropy can be currently used for:
-1. aerosol mechanics calculations e.g., mean free path of aerosols and vapors, slip correction, diffusion coefficients, diffusional losses.
+aerosolpy can be currently used for:
+1. aerosol mechanics calculations e.g., mean free path of aerosols 
+   and vapors, slip correction, diffusion coefficients, diffusional losses.
 2. aerosol kinetics calculations such as collision kernels
-3. aerosol utilities such as unit conversions, math operations (e.g., integration of size distributions)
+3. aerosol utilities such as unit conversions, math operations 
+   (e.g., integration of size distributions)
 
-Once installed as outlined above you can simply import `aerosolpython` using its import name `aeropy` with the recommended abbreviation:
+Once installed as outlined above you can simply import `aerosolpy`:
 
-`import aeropy as ap`
+`import aerosolpy as ap`
 
 ## Support
 
-The package is maintained by Dominik Stolzenburg. All requests should be directed to dominik.stolzenburg@tuwien.ac.at
+The package is maintained by Dominik Stolzenburg. 
+All requests should be directed to dominik.stolzenburg@tuwien.ac.at or 
+open an issue on [GitHub](https://github.com/DominikStolzenburg/aerosolpy) 
 
 ## Documentation
 
-Up-to-date Documentation and full API is hosted on [readthedocs.io](https://aerosolpython.readthedocs.io/en/latest/)
+Up-to-date Documentation and full API is hosted on [readthedocs.io](https://aerosolpy.readthedocs.io/en/latest/)
 
 ## Roadmap
 
