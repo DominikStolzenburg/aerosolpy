@@ -3,7 +3,7 @@ name: Python Package Using Anaconda
 on: [push]
 
 jobs:
-  build-linux:
+  build:
     runs-on: ubuntu-latest
 
     steps:
