@@ -103,10 +103,11 @@ ready for merge to main.
 
 ### Continuous integration
 
-We use [AppVeyor](https://ci.appveyor.com/projects) for continous integration.
-Updates should include test suites using pytest. 
-Automated builds are performed upon each push and will be followed on the
-[aerosolpy page on AppVeyor](https://ci.appveyor.com/project/DominikStolzenburg/aerosolpy).
+We use [GitHub Actions](https://github.com/features/actions) for continous 
+integration. Updates should include test suites using 
+[pytest](https://docs.pytest.org/en/8.0.x/). 
+
+Automated builds are performed upon each push and pull request. 
 
 ## Authors and acknowledgment
 

@@ -1,0 +1,27 @@
+name: Python Package Using Anaconda
+
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+   - name: Install dependencies
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        $CONDA/bin/conda install -n base numpy==1.21.5
+        $CONDA/bin/conda install -n base pandas==1.21.5
+        $CONDA/bin/conda install -n base scipy==1.7.3
+    - name: Install package
+      run: |
+        $CONDA/bin/python setup.py 
+    - name: Test with pytest
+      run: |
+        conda install pytest
+        $CONDA/bin/pytest
