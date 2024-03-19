@@ -16,7 +16,7 @@ jobs:
     - name: install
       shell: powershell
       run: |
-        python install setup.py
+        python setup.py develop
     - name: Test with pytest
       shell: powershell
       run: |
