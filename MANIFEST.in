@@ -1,0 +1,7 @@
+# used to specify which files to be incldued in a PyPi release
+
+#incldue license file and readme
+include LICENSE README.md
+
+#exclude test suite
+exclude tests/test*.py
