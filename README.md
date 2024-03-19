@@ -94,6 +94,20 @@ Up-to-date Documentation and full API is hosted on [readthedocs.io](https://aero
 
 Contributions are welcome. 
 
+### Branching strategy
+
+Follows GitHub Flow, but with branching off releases as in GitLab Flow.
+
+For new features, create an issue first, then work on a feature branch until
+ready for merge to main. 
+
+### Continuous integration
+
+We use [AppVeyor](https://ci.appveyor.com/projects) for continous integration.
+Updates should include test suites using pytest. 
+Automated builds are performed upon each push and will be followed on the
+[aerosolpy page on AppVeyor](https://ci.appveyor.com/project/DominikStolzenburg/aerosolpy).
+
 ## Authors and acknowledgment
 
 If the project is to be acknowledged, references to the gitlab repository are welcome. 

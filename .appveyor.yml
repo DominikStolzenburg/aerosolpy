@@ -1,0 +1,25 @@
+build: off
+
+environment:
+  MINICONDA: C:\\Miniconda39-x64
+
+  matrix:
+    - PYTHON_VERSION: 3.9
+      NUMPY_VERSION: 1.21.5
+
+install:
+  - cmd: call %MINICONDA%\Scripts\activate.bat
+  - cmd: conda.exe update --yes --quiet conda
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda info -a
+  - "conda create -n test-environment python=%PYTHON_VERSION% numpy==%NUMPY_VERSION% scipy"
+  - activate test-environment
+  - python setup.py develop"
+
+before_test:
+  - pip install pytest
+  - pip install pytest-cov
+
+test_script:
+  - pytest -v tests/ --cov=aerosolpy/
