@@ -1,4 +1,4 @@
-name: Test aerosolpy using pip
+name: test aerosolpy in linux using pip
 
 on: [push]
 

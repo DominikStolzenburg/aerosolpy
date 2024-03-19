@@ -11,7 +11,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: test-environment
-        environment-file: environment.yml
+        # environment-file: environment.yml
         python-version: '3.9'
     - name: install
       shell: powershell
