@@ -1,4 +1,4 @@
-name: Test aerosolpy
+name: Test aerosolpy using pip
 
 on: [push]
 
