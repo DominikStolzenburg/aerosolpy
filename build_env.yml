@@ -1,4 +1,0 @@
-dependencies:
-  - numpy=1.21.5=py39h7a0a035_3
-  - pandas=1.4.2=py39hd77b12b_0
-  - scipy=1.7.3=py39h7a0a035_2

@@ -1,0 +1,23 @@
+name: test aerosolpy in windows with miniconda
+
+on: [push]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: test-environment
+          environment-file: environment.yml
+          python-version: '3.9'
+    - name: install
+        shell: powershell
+        python install setup.py
+    - name: Test with pytest
+        shell: powershell
+        run: |
+          conda install pytest
+          pytest .\tests
