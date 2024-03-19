@@ -108,6 +108,9 @@ integration. Updates should include test suites using
 [pytest](https://docs.pytest.org/en/8.0.x/). 
 
 Automated builds are performed upon each push and pull request. 
+Currently CI builds using ``pip`` and Linux. Furture developement should
+also implement CI builds using ``conda`` and Windows as the package will have
+probably many Windows users. 
 
 ## Authors and acknowledgment
 
