@@ -14,10 +14,11 @@ jobs:
         environment-file: environment.yml
         python-version: '3.9'
     - name: install
-        shell: powershell
+      shell: powershell
+      run: |
         python install setup.py
     - name: Test with pytest
-        shell: powershell
-        run: |
-          conda install pytest
-          pytest .\tests
+      shell: powershell
+      run: |
+        conda install pytest
+        pytest .\tests
