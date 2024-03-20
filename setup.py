@@ -12,10 +12,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = "aerosolpy",
-    version = "0.1.0",
+    version = "0.1.1",
     author = "Dominik Stolzenburg",
     author_email = "dominik.stolzenburg@tuwien.ac.at",
-    description = ("aerosolpy is a collection of functions and" 
+    description = ("aerosolpy is a collection of functions and " 
                    "classes useful in calculations related to aerosol science"),
     long_description = long_description,
     long_description_content_type="text/markdown",
