@@ -4,14 +4,12 @@ Installation instructions
 Naming convention
 -----------------
 
-Please note that the package described here is going to be indexed on PyPI
+Please note that the package described here is indexed on PyPI
 as ``aerosolpy`` and can be pip installed and imported under this name. 
 
 Earlier, unofficial versions were distributed as ``aeropy``. 
 The usage of this is deprecated and does not work with this version of 
 ``aerosolpy``
-
-
 
 Dependencies
 ------------
@@ -23,8 +21,11 @@ Dependencies
 Installation
 ------------
 
-``aerosolpy`` is currently not yet available on PyPI, but it can be
-installed by downloading the source code or cloning the  
+``aerosolpy`` is available on `PyPI <https://pypi.org/project/aerosolpy/>`__, so it can be
+installed using pip::
+		pip install aerosolpy
+
+Otherwise the source code can be downloaded or cloned from the  
 `GitHub repository <https://github.com/DominikStolzenburg/aerosolpy>`__ 
 and running the standard::
 

@@ -13,23 +13,15 @@ typical unit conversion, math operations and time operations
 aerosolpy also includes classes for calculations of more complex aerosol 
 mechanics and kinetics.
 
-### Submodules
-
-1. aerosolpy includes the submodule `aerosolpy.instr` which provides 
-   functionality related to typical aerosol measurement devices.
-   Currently supports differential mobility analyzers (DMAs) or 
-   condensation particle counters (CPCs). 
-
 
 ## Installation
 
-aerosolpy is intended to be a python package indexed in PyPi 
-and installation will be made possible via pip. 
-As soon as this is available it can be installed via:
+aerosolpy is available on [PyPi](https://pypi.org/project/aerosolpy/).
+It can be installed via pip to your python environment:
 `pip install aerosolpy`
 
-Currently this is not impelmented yet and the package 
-needs to be installed from source. A setup.py file is included in the package. 
+The package can also be installed from source. 
+A setup.py file is included in the package. 
 Please find the source code available in the public 
 [GitHub repository of aerosolpy](https://github.com/DominikStolzenburg/aerosolpy). 
 
@@ -49,6 +41,8 @@ There are two options for installation.
    `python setup.py install`
    command or its usual variants (`python setup.py install --user`,
    `python setup.py install --prefix=/PATH/TO/INSTALL/DIRECTORY`, etc.)
+   Note that the use of `python setup.py` is deprecated, usage of pip
+   is encouraged also for local installations. 
 
 ## Prerequisits
 
@@ -85,10 +79,8 @@ Up-to-date Documentation and full API is hosted on [readthedocs.io](https://aero
 
 ## Roadmap
 
-1) Full implementation of above described functionalization. 
-2) Fist release and packaging
-3) Future updates on the following submodules: instruments, growth, dynamics. 
-4) Publish a software paper describing the package.
+1) Future updates on the following submodules: instr, growth, dynamics. 
+2) Publish a software paper describing the package.
 
 ## Contributing
 
@@ -114,7 +106,7 @@ probably many Windows users.
 
 ## Authors and acknowledgment
 
-If the project is to be acknowledged, references to the gitlab repository are welcome. 
+If the project is to be acknowledged, references to the gitlab repository or pypi index are welcome. 
 
 ## License
 
