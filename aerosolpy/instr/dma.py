@@ -115,6 +115,10 @@ class Dma(AerosolMechanics):
         array_like
         particle diameter in [nm]
         
+        Raises
+        ------
+        TypeError : charging state must be integer
+        
         """
         if not isinstance(i, int):
             raise TypeError(i, "charging state must be int")
@@ -137,6 +141,10 @@ class Dma(AerosolMechanics):
         -------
         array_like
             voltage in [V]
+        
+        Raises
+        ------
+        TypeError : charging state must be integer
         """
         if not isinstance(i, int):
             raise TypeError(i, "charging state must be int")
@@ -222,7 +230,7 @@ class DmaCylindrical(Dma):
         self.l = length
         self.f_sigma = None
         cal_const = (self.q_sh*np.log(r_o/r_i))/(2*np.pi*self.l)*1e4
-        super(CylindricalDma,self).__init__(cal_const, **kwargs)
+        super(DmaCylindrical,self).__init__(cal_const, **kwargs)
     
     def _dimless_diff_coeff(self, dp):
         """
@@ -377,7 +385,10 @@ class DmaCylindrical(Dma):
         -------
         array_like
             transferfunction
-        
+            
+        Raises
+        ------
+        TypeError : charging state must be integer
         """
         if not isinstance(i, int):
             raise TypeError(i, "charging state must be int")
@@ -399,9 +410,13 @@ class DmaCylindrical(Dma):
             charging state of particle
             
         Returns
-        ----------
+        -------
         array_like
             transferfunction
+        
+        Raises
+        ------
+        TypeError : charging state must be integer
         """
         if not isinstance(i, int):
             raise TypeError(i, "charging state must be int")
