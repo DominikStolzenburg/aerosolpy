@@ -7,5 +7,6 @@
 # are assigned to aerosolpy.instr namespace
 # such that e.g.,  ap.instr.Dma() creates an instance of that class
 
-from aerosolpy.instr.cpc import Cpc
+#from aerosolpy.instr.cpc import Cpc
 from aerosolpy.instr.dma import Dma
+from aerosolpy.instr.dma import DmaCylindrical
