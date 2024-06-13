@@ -27,13 +27,13 @@ class Cpc(AerosolMechanics):
     
     Notes
     -----
-    Hard coded activation efficiencies are all taken from [1]_ , only 
+    Hard coded activation efficiencies are all taken from [24]_ , only 
     silver seed particles and CPC 3776 and 3772 froM TSI Inc. are implemented
 
 
     References
     ----------
-    .. [1] Wlasits, P.J. et al., "Counting on Chemistry: laboratory evaluation 
+    .. [24] Wlasits, P.J. et al., "Counting on Chemistry: laboratory evaluation 
        of seed-material-dependent detection efficiencies of ultrafine 
        condensation particle counters", Atmos. Meas. Techn., vol. 13, pp. 
        3787-3798, 2020
@@ -44,13 +44,13 @@ class Cpc(AerosolMechanics):
         if activation is None:
             self._activation_func = lambda x: 1.0
         elif isinstance( activation, str):
-            if activation=='3776_ag':
+            if activation=='tsi_3776_ag':
                 self._activation_func = (lambda x:
                                          self.wiedensohler_fit(x,
                                                                1.527,2.316,
                                                                0.389,R=4.696e4)
                                          )
-            if activation=='3772_ag':
+            if activation=='tsi_3772_ag':
                 self._activation_func = (lambda x:
                                          self.wiedensohler_fit(x,
                                                                6.4,0.1,
@@ -124,7 +124,7 @@ class Cpc(AerosolMechanics):
     def wiedensohler_fit(self,dp,a,d1,d2,R=0):
         """
         function describing the activation efficiency of a CPC according
-        to [1]_ 
+        to [25]_ 
         
         Parameters
         ----------
@@ -149,7 +149,7 @@ class Cpc(AerosolMechanics):
         
         References
         ----------
-        .. [1] A. Wiedensohler et al., "Intercomparison Study of the 
+        .. [25] A. Wiedensohler et al., "Intercomparison Study of the 
            Size-Dependent Counting Efficiency of 26 Condensation Particle 
            Counters", Aerosol Sci. Tech., vol. 27, pp. 224-242             
         """
