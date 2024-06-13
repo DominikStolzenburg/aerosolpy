@@ -18,8 +18,8 @@ def test_initialization_default():
     assert cpc._activation_func(1.0) == 1.0
 
 def test_initialization_string():
-    cpc_3776_ag = ap.instr.Cpc(activation='3776_ag')
-    cpc_3772_ag = ap.instr.Cpc(activation='3772_ag')
+    cpc_3776_ag = ap.instr.Cpc(activation='tsi_3776_ag')
+    cpc_3772_ag = ap.instr.Cpc(activation='tsi_3772_ag')
     assert cpc_3776_ag._activation_func(10.0) is not None
     assert cpc_3772_ag._activation_func(10.0) is not None
 
@@ -51,7 +51,7 @@ def test_initialization_invalid_type():
 
 # Test the count_eff method
 def test_count_eff():
-    cpc = ap.instr.Cpc(activation='3776_ag')
+    cpc = ap.instr.Cpc(activation='tsi_3776_ag')
     dp = np.array([1.0, 10.0, 100.0])
     eff = cpc.count_eff(dp)
     assert all(eff >= 0)  # Ensure no negative efficiencies
