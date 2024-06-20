@@ -42,7 +42,8 @@ class Dma(AerosolMechanics):
         
         #input type dependent treatment of optional argument penetration
         if penetration is None:
-            self._penetration_func = lambda x: 1.0
+            # use x*0+1.0 to appropriately shape the output. 
+            self._penetration_func = lambda x: x*0+1.0 
         elif np.isscalar(penetration): 
             self._penetration_func = (lambda x: 
                                       self.diff_loss(x,penetration/self.Q_a)
@@ -152,7 +153,7 @@ class Dma(AerosolMechanics):
         dp = self.zp_to_v(zp)
         return dp
     
-    def pen_eff(self,dp):
+    def pen_eff(self, dp):
         """
         calculates penetration efficiency of DMA
         
@@ -168,6 +169,37 @@ class Dma(AerosolMechanics):
         """
         eta = self._penetration_func(dp)
         return eta
+    
+    def dp_transfunc(self, dp, dp_prime, shape='unity'):
+        """
+        calculates transferfuncion of DMA in dp-space
+
+        Parameters
+        ----------
+        dp : array_like of float 
+            particle diameter in [nm]
+        dp_prime : float
+            reference centroid diameter in [nm] corresponding to voltage at DMA
+        shape : str, optional
+            shape of the transferfunction, default 'unity'
+
+        Returns
+        -------
+        array_like of float
+            transferfunction at diameter dp
+
+        Notes
+        -----
+        parent class dummy method.
+        
+        See also
+        --------
+        aerosolpy.instr.DmaCylindrical.dp_transfunc
+        """
+        if shape=='unity':
+            return dp*0+1.0
+        else:
+            return None
 
 
 class DmaCylindrical(Dma):
@@ -316,7 +348,7 @@ class DmaCylindrical(Dma):
         pi = 3.14159
         return (x*erf(x)) + (np.exp(-x**2)/(np.sqrt(pi)))
 
-    def zp_dimless_triang_transfunc(self, zp_tilde):
+    def _zp_dimless_transfunc_triang(self, zp_tilde):
         """
         calculates dimensionless triangular shaped transferfunction in 
         mobility space
@@ -340,7 +372,7 @@ class DmaCylindrical(Dma):
                         )
         return omega_ztilde
     
-    def zp_dimless_diffus_transfunc(self, zp_tilde, dp_prime):
+    def _zp_dimless_transfunc_diffus(self, zp_tilde, dp_prime):
         """
         calculates dimensionless diffusional transferfunction in 
         mobility space
@@ -368,7 +400,7 @@ class DmaCylindrical(Dma):
                         )
         return omega_ztilde
  
-    def dp_triang_transfunc(self, dp, dp_prime, i=1):
+    def dp_transfunc_triang(self, dp, dp_prime, i=1):
         """
         calculates triangular shaped transferfunction in diameter space
         
@@ -394,9 +426,9 @@ class DmaCylindrical(Dma):
             raise TypeError(i, "charging state must be int")
             
         zp_tilde = self.dp_to_zp(dp,i=i)/self.dp_to_zp(dp_prime,i=i)
-        return self.zp_dimless_triang_transfunc(zp_tilde)
+        return self._zp_dimless_transfunc_triang(zp_tilde)
 
-    def dp_diffus_transfunc(self, dp, dp_prime, i=1):
+    def dp_transfunc_diffus(self, dp, dp_prime, i=1):
         """
         calculates diffusional transferfunction in diameter space
         
@@ -422,10 +454,10 @@ class DmaCylindrical(Dma):
             raise TypeError(i, "charging state must be int")
             
         zp_tilde = self.dp_to_zp(dp,i=i)/self.dp_to_zp(dp_prime,i=i)
-        omega_d = self.zp_dimless_diffus_transfunc(zp_tilde, dp_prime)
+        omega_d = self._zp_dimless_transfunc_diffus(zp_tilde, dp_prime)
         return omega_d
     
-    def dp_diffus_transfunc_lognorm(self, dp, dp_prime):
+    def dp_transfunc_lognorm(self, dp, dp_prime):
         """
         calculates diffusional transferfunction in diameter space with log-
         normal approximation
@@ -459,6 +491,37 @@ class DmaCylindrical(Dma):
                    * np.exp(-0.5*((np.log(dp_tilde)-geomean)**2)/geodev)
                    )
         return Omega_d
+    
+    def dp_transfunc(self, dp, dp_prime, shape='lognorm'):
+        """
+        calculates transferfuncion of DMA in dp-space
+
+        Parameters
+        ----------
+        dp : array_like of float 
+            particle diameter in [nm]
+        dp_prime : float
+            reference centroid diameter in [nm] corresponding to voltage at DMA
+        shape : str, optional
+            shape of the transferfunction, default 'unity'
+
+        Returns
+        -------
+        array_like of float
+            transferfunction at diameter dp
+
+        Notes
+        -----
+        overwrites parent class dp_transfunc
+        
+        See also
+        --------
+        aerosolpy.instr.Dma.dp_transfunc
+        """
+        if shape=='unity':
+            return 0*dp+1.0
+        elif shape=='triang':
+            return self.dp_transfunc_triang(dp, dp_prime)
     
     def calc_transfunc_limits(self, dp_prime, range_mult=3):
         """

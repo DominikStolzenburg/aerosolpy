@@ -7,6 +7,7 @@ from scipy.integrate import quad
 
 from aerosolpy.mechanics import AerosolMechanics
 from aerosolpy.instr.dma import Dma
+from aerosolpy.instr.dma import DmaCylindrical
 from aerosolpy.instr.cpc import Cpc
 
 class Mpss(AerosolMechanics):
@@ -48,11 +49,12 @@ class Mpss(AerosolMechanics):
     def __init__(self, channels, dma,
                  cpc=None, inlet_loss=None, polarity='neg', volts_channels=False,
                  **kwargs):
-        
-        if isinstance(dma, Dma):
+        print(dma)
+        if (isinstance(dma, Dma) or isinstance(dma, DmaCylindrical)):
+            
             self.mpss_dma = dma
         else:
-            raise TypeError(cpc, "dma needs to be of type aerosolpy.instr.Dma")
+            raise TypeError(dma, "dma needs to be of type aerosolpy.instr.Dma")
             
         if cpc is None:
             self.mpss_cpc = Cpc(activation=None)
@@ -63,7 +65,8 @@ class Mpss(AerosolMechanics):
         
         #input type dependent treatment of optional argument penetration
         if inlet_loss is None:
-            self._inletloss_func = lambda x: 1.0
+            # use x*0+1.0 to appropriately shape the output. 
+            self._inletloss_func = lambda x: x*0+1.0
         elif np.isscalar(inlet_loss): 
             self._inletloss_func = lambda x: self.diff_loss(x,inlet_loss)
                                     
@@ -221,6 +224,16 @@ class Mpss(AerosolMechanics):
         array_like of float
             expected concentration in every size-channel 
         """
+        if isinstance(self.mpss_dma, Dma):
+            tf_shape = 'unity'
+        elif isinstance(self.mpss_dma, DmaCylindrical):
+            tf_shape = 'lognorm'
+        else:
+            TypeError(self.mpss_dma, 
+                      ("for caclcualtion of expected signal, "
+                       "aerosolpy.instr.Mpss.mpss_dma needs to by of Type "
+                       "aerosolpy.instr.Dma or aerosolpy.instr.DmaCylindrical")
+                      )
         c = []
         if self.polarity=='neg': pol=-1
         if self.polarity=='pos': pol=1
@@ -228,14 +241,14 @@ class Mpss(AerosolMechanics):
             for ch in range(len(self.channels)):
                 d = self.channels[ch]
                 integral = quad(lambda x: (f_dNdlogDp(x)
-                                    *self.mpss_dma.dp_diffus_transfunc_lognorm(x,d)
+                                    *self.mpss_dma.dp_transfunc(x,d,shape=tf_shape)
                                     *self.charge_prob(x,pol)
                                     *self.tot_eff(x)/x/np.log(10)
                                            ),
-                                self.mpss_dma.calc_transferfunction_limits(d)[0],
-                                self.mpss_dma.calc_transferfunction_limits(d)[1]
+                                xmin,
+                                xmax
                                 )[0] 
-                c.append(self.t_res[ch]*self.Q_count*integral)
+                c.append(integral)
         elif imax>=2:
             for ch in range(len(self.channels)):
                 # tot_eff is incorporated into tot_transfunc
@@ -248,7 +261,7 @@ class Mpss(AerosolMechanics):
                 c.append(integral)
         else:
             raise ValueError(imax, "imax needs to be positive integer")
-        return c
+        return np.array(c)
     
     def n_expected(self, f_dNdlogDp, q_sample, t_res, 
                    imax=1, xmin=1, xmax=1000):
@@ -282,8 +295,9 @@ class Mpss(AerosolMechanics):
             corresponding measurement time t_res and counter flow q_sample
         """
         q_sample = q_sample*1000/60. # for [cm3 s-1]
-        if np.isscaler(t_res):
+        if np.isscalar(t_res):
             t_res = np.array([t_res]*len(self.channels))
+
         n = (self.c_expected(f_dNdlogDp, imax=imax, xmin=xmin, xmax=xmax)[:]
              *q_sample*t_res[:])
         return n
@@ -306,6 +320,11 @@ class Mpss(AerosolMechanics):
             inverted size-distribution, dp in first column, dNdlog/Dp in second
             column
             
+        Raises
+        ------
+        TypeError
+            Mpss needs to have a Dma of Type aerosolpy.dma.DmaCylindrical
+            
         Notes
         -----
         assumes constant size-distribution and efficiencies across the width
@@ -314,6 +333,12 @@ class Mpss(AerosolMechanics):
         nsd = []
         if self.polarity=='neg': pol=-1
         if self.polarity=='pos': pol=1
+        
+        if not isinstance(self.mpss_dma, DmaCylindrical):
+            raise TypeError(self.mpss_dma, 
+                            ("Mpss needs to have a Dma of Type "
+                             "aerosolpy.dma.DmaCylindrical")
+                            )
         
         if imax==1:
             for k in range(len(Craw)):
