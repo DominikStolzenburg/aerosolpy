@@ -49,9 +49,8 @@ class Mpss(AerosolMechanics):
     def __init__(self, channels, dma,
                  cpc=None, inlet_loss=None, polarity='neg', volts_channels=False,
                  **kwargs):
-        print(dma)
-        if (isinstance(dma, Dma) or isinstance(dma, DmaCylindrical)):
-            
+
+        if (isinstance(dma, Dma) or isinstance(dma, DmaCylindrical)):          
             self.mpss_dma = dma
         else:
             raise TypeError(dma, "dma needs to be of type aerosolpy.instr.Dma")
@@ -363,7 +362,7 @@ class Mpss(AerosolMechanics):
             self.channels = self.channels[sort]
             Craw = Craw[sort]
             
-            volts = self.dma_mpss.dp_to_v(self.channels)
+            volts = self.mpss_dma.dp_to_v(self.channels)
             volts_max = np.max(volts)
             nsd = np.zeros(self.channels.shape)
             beta = self.mpss_dma.q_a/self.mpss_dma.q_sh
