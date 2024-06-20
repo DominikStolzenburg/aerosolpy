@@ -23,7 +23,7 @@ class Cpc(AerosolMechanics):
     Attributes
     ----------
     _activation_func : callable
-        fundtion describing the activation efficiency of a CPC, dimless
+        function describing the activation efficiency of a CPC, dimless
     
     Notes
     -----

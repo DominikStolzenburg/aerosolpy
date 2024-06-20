@@ -47,14 +47,14 @@ class Dma(AerosolMechanics):
             self._penetration_func = (lambda x: 
                                       self.diff_loss(x,penetration/self.Q_a)
                                       )
-        elif isinstance( penetration, np.ndarray):
+        elif isinstance(penetration, np.ndarray):
             self._penetration_func  = interp1d(penetration[:,0],
                                                penetration[:,1])
-        elif isinstance( penetration, pd.DataFrame):
+        elif isinstance(penetration, pd.DataFrame):
             self._penetration_func  = interp1d(penetration.iloc[:,0].tolist(),
                                                penetration.iloc[:,1].tolist()
                                                )
-        elif callable( penetration):
+        elif callable(penetration):
             self._penetration_func = penetration
         else:
             raise TypeError(penetration,
@@ -316,7 +316,7 @@ class DmaCylindrical(Dma):
         pi = 3.14159
         return (x*erf(x)) + (np.exp(-x**2)/(np.sqrt(pi)))
 
-    def zp_dimless_triangular_transfunc(self, zp_tilde):
+    def zp_dimless_triang_transfunc(self, zp_tilde):
         """
         calculates dimensionless triangular shaped transferfunction in 
         mobility space
@@ -340,7 +340,7 @@ class DmaCylindrical(Dma):
                         )
         return omega_ztilde
     
-    def zp_dimless_diffusional_transfunc(self, zp_tilde, dp_prime):
+    def zp_dimless_diffus_transfunc(self, zp_tilde, dp_prime):
         """
         calculates dimensionless diffusional transferfunction in 
         mobility space
@@ -368,7 +368,7 @@ class DmaCylindrical(Dma):
                         )
         return omega_ztilde
  
-    def dp_triangular_transfunc(self, dp, dp_prime, i=1):
+    def dp_triang_transfunc(self, dp, dp_prime, i=1):
         """
         calculates triangular shaped transferfunction in diameter space
         
@@ -394,9 +394,9 @@ class DmaCylindrical(Dma):
             raise TypeError(i, "charging state must be int")
             
         zp_tilde = self.dp_to_zp(dp,i=i)/self.dp_to_zp(dp_prime,i=i)
-        return self.zp_dimless_triangular_transfunc(zp_tilde)
+        return self.zp_dimless_triang_transfunc(zp_tilde)
 
-    def dp_diffusional_transfunc(self, dp, dp_prime, i=1):
+    def dp_diffus_transfunc(self, dp, dp_prime, i=1):
         """
         calculates diffusional transferfunction in diameter space
         
@@ -422,10 +422,10 @@ class DmaCylindrical(Dma):
             raise TypeError(i, "charging state must be int")
             
         zp_tilde = self.dp_to_zp(dp,i=i)/self.dp_to_zp(dp_prime,i=i)
-        omega_d = self.zp_dimless_diffusional_transfunc(zp_tilde, dp_prime)
+        omega_d = self.zp_dimless_diffus_transfunc(zp_tilde, dp_prime)
         return omega_d
     
-    def dp_diffusional_transfunc_lognorm(self, dp, dp_prime):
+    def dp_diffus_transfunc_lognorm(self, dp, dp_prime):
         """
         calculates diffusional transferfunction in diameter space with log-
         normal approximation

@@ -10,3 +10,4 @@
 from aerosolpy.instr.cpc import Cpc
 from aerosolpy.instr.dma import Dma
 from aerosolpy.instr.dma import DmaCylindrical
+from aerosolpy.instr.mpss import Mpss
