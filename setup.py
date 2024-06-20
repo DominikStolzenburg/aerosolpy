@@ -12,14 +12,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = "aerosolpy",
-    version = "0.1.1",
+    version = "0.2.0",
     author = "Dominik Stolzenburg",
     author_email = "dominik.stolzenburg@tuwien.ac.at",
     description = ("aerosolpy is a collection of functions and " 
                    "classes useful in calculations related to aerosol science"),
     long_description = long_description,
     long_description_content_type="text/markdown",
-    packages = ["aerosolpy"],
+    packages = setuptools.find_packages(include=['aerosolpy', 'aerosolpy.*']),
     url = "https://github.com/DominikStolzenburg/aerosolpy",
     license = "MIT",
     classifiers = ["Intended Audience :: Science/Research",
