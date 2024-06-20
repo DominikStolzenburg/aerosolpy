@@ -39,10 +39,11 @@ class Cpc(AerosolMechanics):
        3787-3798, 2020
     
     """
-    def __init__(self,activation=None,**kwargs): 
+    def __init__(self, activation=None, **kwargs): 
         #type-dependent definition of the activation function
         if activation is None:
-            self._activation_func = lambda x: 1.0
+            # use x*0+1.0 to appropriately shape the output.
+            self._activation_func = lambda x: x*0+1.0
         elif isinstance( activation, str):
             if activation=='tsi_3776_ag':
                 self._activation_func = (lambda x:
