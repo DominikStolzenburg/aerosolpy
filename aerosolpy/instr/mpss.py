@@ -376,7 +376,7 @@ class Mpss(AerosolMechanics):
                 while volts[ch] > volts_max/(i+1):
                     corr = 0
                     for j in range(2,i+1):
-                        dp_inter = self.dma_mpss.v_to_dp(volts[ch], i=j)
+                        dp_inter = self.mpss_dma.v_to_dp(volts[ch], i=j)
                         a_inter = self.a_function(dp_inter)
                         fc_inter = self.charge_prob(dp_inter, pol*j)
                         eff_inter = self.tot_eff(dp_inter)
@@ -404,7 +404,7 @@ class Mpss(AerosolMechanics):
                                          kind='cubic')
                 corr = 0
                 for j in range(2,imax+1):
-                    dp_inter = self.dma_mpss.v_to_dp(volts[ch], i=j)
+                    dp_inter = self.mpss_dma.v_to_dp(volts[ch], i=j)
                     a_inter = self.a_function(dp_inter)
                     fc_inter = self.charge_prob(dp_inter, pol*j)
                     eff_inter = self.tot_eff(dp_inter)
