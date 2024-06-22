@@ -254,13 +254,14 @@ class DmaCylindrical(Dma):
        the Transfer Function", Aerosol Sci. Tech., vol. 42, iss. 6, pp.
        421-432, 2008
     """
-    def __init__(self, q_a, q_sh, length, r_i, r_o, f_sigma=1, **kwargs):
-        q_sh*np.log(r_o/r_i)/(2*np.pi*length)
+    def __init__(self, q_a, q_sh, length, r_i, r_o, f_sigma=1.0, **kwargs):
             
         self.q_a = lpm_to_m3pers(q_a)
         self.q_sh = lpm_to_m3pers(q_sh)
+        self.r_i = r_i
+        self.r_o = r_o
         self.l = length
-        self.f_sigma = None
+        self.f_sigma = f_sigma
         cal_const = (self.q_sh*np.log(r_o/r_i))/(2*np.pi*self.l)*1e4
         super(DmaCylindrical,self).__init__(cal_const, **kwargs)
     
@@ -279,7 +280,7 @@ class DmaCylindrical(Dma):
             dimensionless diffusion coefficent
         """
         pi = 3.14159
-        diff_coeff_tilde = 2*pi*self.l*self.diff_coeff(dp)/self.q_sh
+        diff_coeff_tilde = 2*pi*self.l*self.diff_coeff_p(dp)/self.q_sh
         return diff_coeff_tilde
     
     def _sigma_theo(self, dp):
@@ -522,6 +523,14 @@ class DmaCylindrical(Dma):
             return 0*dp+1.0
         elif shape=='triang':
             return self.dp_transfunc_triang(dp, dp_prime)
+        elif shape=='diffus':
+            return self.dp_transfunc_diffus(dp, dp_prime)
+        elif shape=='lognorm':
+            return self.dp_transfunc_lognorm(dp, dp_prime)
+        else:
+            ValueError(shape, ("needs to be 'unity', 'triang', 'diffus' or "
+                               "'lognorm'")
+                       )
     
     def calc_transfunc_limits(self, dp_prime, range_mult=3):
         """

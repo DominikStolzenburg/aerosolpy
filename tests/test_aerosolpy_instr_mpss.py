@@ -15,8 +15,8 @@ def dma():
 # Fixture for CylindricalDma instance
 @pytest.fixture
 def cylindrical_dma():
-    return ap.instr.DmaCylindrical(q_a=2.5, q_sh=15., length=0.0133, 
-                                   r_i=0.013, r_o=0.02)
+    return ap.instr.DmaCylindrical(q_a=1.5, q_sh=7.5, length=0.109, 
+                                   r_i=0.025, r_o=0.033)
 
 @pytest.fixture
 def cpc():
@@ -24,7 +24,7 @@ def cpc():
 
 @pytest.fixture
 def channels():
-    return np.array([10, 20, 30, 40, 50])
+    return np.array([10., 20., 30., 40., 50.])
 
 @pytest.fixture
 def inlet_loss_array():
@@ -98,15 +98,39 @@ def test_n_expected(dma, cpc, channels):
     assert counts.shape == channels.shape
 
 # Test standard inversion
-def test_std_inv(cylindrical_dma, cpc, channels):
-    mpss = ap.instr.Mpss(channels, cylindrical_dma, cpc=cpc)
+def test_std_inv(cylindrical_dma, cpc):
+    diameters = np.array([6.0,7.01,8.187,9.564,1.1172e1,1.305e1,1.5244e1,
+                          1.7807e1,2.0801e1,2.4298e1,2.8383e1,3.31554e1,
+                          3.873e1,4.5241e1,5.2848e1,6.1733e1,7.2112e1,
+                          8.4238e1,9.84e1,1.14943e2,1.34269e+2,1.56843e2,
+                          1.83214e2,2.14017e2,2.50e2])
     
-    Craw = np.array([10, 20, 30, 40, 50])
+    mpss = ap.instr.Mpss(diameters, cylindrical_dma, cpc=cpc)
     
-    dp, nsd = mpss.std_inv(Craw)
+    # data from Airmodus MPSS Hyytiala
+    Craw = np.array([0,0,0,0,0.126,0.38,0.57,0.506,4.886,19.296,54.658,110.776,
+                     180.68,214.274,153.7,67.288,26.66,18.852,15.744,17.836,
+                     18.154,18.726,15.552,8.696,5.268])
+    
+    nsd_expected = np.array([0,0,0,0,4.88e1,1.23e2,1.51e2,8.60e1,
+                             8.35e2,2.89e3,7.21e3,1.31e4,1.98e4,
+                             2.17e4,1.42e4,5.60e3,1.92e3,1.06e3,
+                             6.25e2,7.10e2,8.79e2,1.09e3,1.03e3,
+                             5.79e2,3.56e2])
+    
+    dp, nsd = mpss.std_inv(Craw, imax=5)
     assert isinstance(dp, np.ndarray)
     assert isinstance(nsd, np.ndarray)
     assert dp.shape == nsd.shape
+    assert nsd == pytest.approx(nsd_expected, rel=1e-2)
+
+def test_mpss_kernel(cylindrical_dma, cpc, channels):
+
+    mpss = ap.instr.Mpss(channels, cylindrical_dma, cpc=cpc)
+
+    dj, Ainit = mpss.kernel()
+    assert isinstance(dj, np.ndarray)
+    assert isinstance(Ainit, np.ndarray)
 
 # Run the tests
 if __name__ == "__main__":

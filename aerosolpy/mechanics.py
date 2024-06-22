@@ -164,7 +164,7 @@ class AerosolMechanics:
         deriv = (- 1/(dp**2)
                  - (4*self.mfp*1.165)/(dp**3)
                  - ((2*self.mfp*0.483*np.exp(-0.997/(2*self.mfp)*dp) 
-                     *(-0.997/(2*self.mfp)*dp+2)
+                     *(0.997/(2*self.mfp)*dp+2)
                      )
                     /(dp**3)
                     )

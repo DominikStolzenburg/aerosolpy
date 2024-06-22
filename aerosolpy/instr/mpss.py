@@ -188,8 +188,7 @@ class Mpss(AerosolMechanics):
             dma_trans = 0
             for n in range(len(dp_multiple)):
                 dma_trans = (dma_trans 
-                             + (self.mpss_dma.dp_diffusional_transfunc_lognorm(
-                                x,dp_multiple[n])
+                             + (self.mpss_dma.dp_transfunc_lognorm(x,dp_multiple[n])
                                 *self.charge_prob(x, char_states[n])
                                 )
                              )
@@ -409,6 +408,7 @@ class Mpss(AerosolMechanics):
                     fc_inter = self.charge_prob(dp_inter, pol*j)
                     eff_inter = self.tot_eff(dp_inter)
                     nsd_inter = interpnsd(dp_inter)
+                    if nsd_inter<0: nsd_inter=0
                     corr = corr + nsd_inter*fc_inter*eff_inter*beta/a_inter
                 
                 #calc nsd
@@ -426,64 +426,63 @@ class Mpss(AerosolMechanics):
         
         return (self.channels, nsd)
         
-        def kernel(self,discretizations=128,dj_low=1,dj_high=1000):
-            """
-            creates inversion kernel matrix for this instrument
+    def kernel(self,discretizations=128,dj_low=1,dj_high=1000):
+        """
+        creates inversion kernel matrix for this instrument
             
-            Parameters
-            ----------
-            discretizations : int, or np.array, optional
-                number of discretizations for the inversion
-                or np.ndarray of doimension 1 with pre-defined 
-                diameters, default 128
-            dj_low : float, optional
-                lower diameter in [nm] for discretization, default 1
-            dj_high : float, optional
-                higher diameter in [nm] for discretization, default 1000
+        Parameters
+        ----------
+        discretizations : int, or np.array, optional
+            number of discretizations for the inversion
+            or np.ndarray of doimension 1 with pre-defined 
+            diameters, default 128
+        dj_low : float, optional
+            lower diameter in [nm] for discretization, default 1
+        dj_high : float, optional
+            higher diameter in [nm] for discretization, default 1000
             
-            Returns
-            ----------
-            array_like of float
-                discretization diameters dj
-            np.ndarray of float
-                2d array fo kernel function evaluated at all discretizations
+        Returns
+        -------
+        array_like of float
+            discretization diameters dj
+        np.ndarray of float
+            2d array fo kernel function evaluated at all discretizations
             
-            Notes
-            ----------
-            kernel is discretized on logarithmic intervals if not
-            specified
-            """
+        Notes
+        -----
+        kernel is discretized on logarithmic intervals if not
+        specified
+        """
+        transfuncs = []
+        I = len(self.channels)
+        if np.isscalar(discretizations): 
             transfuncs = []
+            J = discretizations
             I = len(self.channels)
-            if np.isscalar(discretizations): 
-                transfuncs = []
-                J = discretizations
-                I = len(self.channels)
-                Delta = (np.log10(dj_high)-np.log10(dj_low))/(J-1) 
-                dj = np.array([dj_low*10**(j*Delta) for j in range(J)])
-                for k in range(len(self.channels)): 
-                            transfuncs.append(self.tot_transfunc(self.channels[k]))
-                Ainit = np.zeros((I,J))
-                for i in range(I):
-                    for j in range(J):
-                        Ainit[i][j] = transfuncs[i](dj[j])*Delta
-                return dj, Ainit
-            elif (isinstance(discretizations,np.ndarray)):
-                J = len(discretizations)
-                for k in range(len(self.channels)): 
-                            transfuncs.append(self.tot_transfunc(self.channels[k])) 
-                Ainit = np.zeros((I,J))
-                ldp = np.log10(discretizations)
-                dp_lim = np.zeros(J+1)
-                dp_lim[0] = ldp[0]-(ldp[1]-ldp[0])/2.
-                dp_lim[1:-1] = (ldp[1:]+ldp[:-1])/2.
-                dp_lim[-1] = ldp[-1]+(ldp[-1]-ldp[-2])/2.
-                for i in range(I):
-                    for j in range(J):
-                        Ainit[i][j] = quad(
-                                          lambda x: transfuncs[i](10**x),
-                                          dp_lim[j],
-                                          dp_lim[j+1])[0]
-                return dp_lim, Ainit
-            else:
-                TypeError("discretizations needs to be scalar or np.ndarray")
+            Delta = (np.log10(dj_high)-np.log10(dj_low))/(J-1) 
+            dj = np.array([dj_low*10**(j*Delta) for j in range(J)])
+            for k in range(len(self.channels)): 
+                transfuncs.append(self.tot_transfunc(self.channels[k]))
+            Ainit = np.zeros((I,J))
+            for i in range(I):
+                for j in range(J):
+                    Ainit[i][j] = transfuncs[i](dj[j])*Delta
+            return dj, Ainit
+        elif (isinstance(discretizations,np.ndarray)):
+            J = len(discretizations)
+            for k in range(len(self.channels)): 
+                transfuncs.append(self.tot_transfunc(self.channels[k])) 
+            Ainit = np.zeros((I,J))
+            ldp = np.log10(discretizations)
+            dp_lim = np.zeros(J+1)
+            dp_lim[0] = ldp[0]-(ldp[1]-ldp[0])/2.
+            dp_lim[1:-1] = (ldp[1:]+ldp[:-1])/2.
+            dp_lim[-1] = ldp[-1]+(ldp[-1]-ldp[-2])/2.
+            for i in range(I):
+                for j in range(J):
+                    Ainit[i][j] = quad(lambda x: transfuncs[i](10**x),
+                                       dp_lim[j],
+                                       dp_lim[j+1])[0]
+            return dp_lim, Ainit
+        else:
+            TypeError("discretizations needs to be scalar or np.ndarray")
