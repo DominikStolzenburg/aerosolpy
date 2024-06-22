@@ -28,3 +28,6 @@ API reference
 
 .. autoclass:: aerosolpy.instr.Cpc
     :members:
+
+.. autoclass:: aerosolpy.instr.Mpss
+    :members:
