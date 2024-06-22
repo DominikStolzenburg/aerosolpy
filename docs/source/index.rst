@@ -4,13 +4,14 @@
    contain the root `toctree` directive.
 
 Welcome to aerosolpy's documentation!
-==================================
+=====================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
    installation.rst
+   intro.rst
    reference.rst
 
 

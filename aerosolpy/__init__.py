@@ -18,3 +18,6 @@ from aerosolpy.units import lpm_to_m3pers
 
 from aerosolpy.mechanics import AerosolMechanics
 from aerosolpy.kinetics import AerosolKinetics
+
+#specify submodules
+import aerosolpy.instr

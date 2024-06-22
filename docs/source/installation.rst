@@ -23,6 +23,7 @@ Installation
 
 ``aerosolpy`` is available on `PyPI <https://pypi.org/project/aerosolpy/>`__, so it can be
 installed using pip::
+
 		pip install aerosolpy
 
 Otherwise the source code can be downloaded or cloned from the  

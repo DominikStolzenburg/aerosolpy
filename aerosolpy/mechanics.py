@@ -164,7 +164,7 @@ class AerosolMechanics:
         deriv = (- 1/(dp**2)
                  - (4*self.mfp*1.165)/(dp**3)
                  - ((2*self.mfp*0.483*np.exp(-0.997/(2*self.mfp)*dp) 
-                     *(-0.997/(2*self.mfp)*dp+2)
+                     *(0.997/(2*self.mfp)*dp+2)
                      )
                     /(dp**3)
                     )
@@ -188,7 +188,7 @@ class AerosolMechanics:
         
         See also:
         ----------
-        aeropy.AerosolMechanics.a_function
+        aerosolpy.AerosolMechanics.a_function
         
         References
         ----------
@@ -216,7 +216,7 @@ class AerosolMechanics:
         
         See also
         ----------
-        aeropy.AerosolMechanics.psi_function
+        aerosolpy.AerosolMechanics.psi_function
         
         References
         ----------
@@ -415,7 +415,7 @@ class AerosolMechanics:
         
         See also
         ----------
-        aeropy.AerosolMechanics.dp_to_zp
+        aerosolpy.AerosolMechanics.dp_to_zp
         
         Notes
         ----------
@@ -453,7 +453,7 @@ class AerosolMechanics:
         
         See also
         ----------
-        aeropy.AerosolMechanics.zp_to_dp
+        aerosolpy.AerosolMechanics.zp_to_dp
         
         Notes
         ----------

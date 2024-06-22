@@ -2,7 +2,7 @@ API reference
 =============
 
 ``aerosolpy``
-----------
+-------------
 
 .. autofunction:: aerosolpy.integrate_dx_dlogdp
 
@@ -19,3 +19,15 @@ API reference
 
 .. autoclass:: aerosolpy.AerosolKinetics
    :members:
+
+``aerosolpy.instr``
+-------------------
+
+.. autoclass:: aerosolpy.instr.Dma
+    :members:
+
+.. autoclass:: aerosolpy.instr.Cpc
+    :members:
+
+.. autoclass:: aerosolpy.instr.Mpss
+    :members:
