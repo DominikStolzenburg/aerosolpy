@@ -8,6 +8,8 @@ API reference
 
 .. autofunction:: aerosolpy.matlab_to_datetime
 
+.. autofunction:: aerosolpy.dayofyear_to_datetime
+
 .. autofunction:: aerosolpy.ppt_to_percm3
 
 .. autofunction:: aerosolpy.mugprom3_to_ppb
