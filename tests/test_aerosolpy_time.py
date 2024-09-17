@@ -11,3 +11,4 @@ def test_matlab_to_datetime():
 def test_dayofyear_to_datetime():
     # test if matlab datenum gives correct date
     assert ap.dayofyear_to_datetime(2024,128.0) == dt.datetime(2024,5,7)
+

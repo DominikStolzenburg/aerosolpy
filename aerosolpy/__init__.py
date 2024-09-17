@@ -22,3 +22,4 @@ from aerosolpy.kinetics import AerosolKinetics
 
 #specify submodules
 import aerosolpy.instr
+import aerosolpy.growth

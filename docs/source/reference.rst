@@ -33,3 +33,9 @@ API reference
 
 .. autoclass:: aerosolpy.instr.Mpss
     :members:
+
+``aerosolpy.growth``
+--------------------
+
+.. autoclass:: aerosolpy.growth.KineticLimit
+    :members:
