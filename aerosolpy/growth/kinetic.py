@@ -13,7 +13,7 @@ class KineticLimit(AerosolKinetics):
         molecular mass of dry vapor [g mol-1]
     rhov : float, optional 
         density of vapor in [kg m-3]   
-    T : float, optional
+    temp_kelvin : float, optional
         temperature in [k], default 293.15 K
     """
     def __init__(self, mv, rhov, temp_kelvin=293.15, **kwargs):
@@ -21,8 +21,8 @@ class KineticLimit(AerosolKinetics):
         self.rhov = rhov
         super(KineticLimit,self).__init__(temp_kelvin=temp_kelvin, **kwargs)
         
-    def growth_rate(self, dp, Cv,
-                    diff_coeff_v = None, Hamaker=5.2e-20,
+    def growth_rate(self, dp, cv,
+                    diff_coeff_v = None, hamaker=5.2e-20,
                     kernel='hard sphere',
                     dynamic_regime='transition'):
         """
@@ -64,7 +64,7 @@ class KineticLimit(AerosolKinetics):
 
         elif ((kernel=='sceats') or (kernel=='fuchs')):
             kcoll = self.coll_kernel_vp_vdw(dv*1e9, dp, self.rhov, self.rhov,
-                                            Hamaker,
+                                            hamaker,
                                             diff_coeff_v=diff_coeff_v, 
                                             dynamic_regime=dynamic_regime
                                             )
@@ -73,10 +73,10 @@ class KineticLimit(AerosolKinetics):
             raise ValueError(kernel, "needs to be hard sphere, sceats or fuchs")
     
        
-        GR = (kcoll * Vv * (Cv*1e6) 
+        gr = (kcoll * Vv * (cv*1e6) 
               /((3.14159/2)*(dp*1e-9)**2)
               )
-        GR = GR * 1e9 * 3600
-        return GR
+        gr = gr * 1e9 * 3600
+        return gr
     
 

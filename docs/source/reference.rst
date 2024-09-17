@@ -39,3 +39,6 @@ API reference
 
 .. autoclass:: aerosolpy.growth.KineticLimit
     :members:
+
+.. autoclass:: aerosolpy.growth.SulfuricAcid
+    :members:
