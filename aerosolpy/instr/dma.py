@@ -21,6 +21,7 @@ class Dma(AerosolMechanics):
         (1/zp)_ref in [V s cm-2]
     
     penetration : float or array_like or callable, optional
+        if float, needs to be expressed as L/Q [m/(m3/s)]
     
     Attributes
     ----------
@@ -46,7 +47,7 @@ class Dma(AerosolMechanics):
             self._penetration_func = lambda x: x*0+1.0 
         elif np.isscalar(penetration): 
             self._penetration_func = (lambda x: 
-                                      self.diff_loss(x,penetration/self.Q_a)
+                                      self.diff_loss(x,penetration)
                                       )
         elif isinstance(penetration, np.ndarray):
             self._penetration_func  = interp1d(penetration[:,0],
