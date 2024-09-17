@@ -1,6 +1,12 @@
 # aerosolpy - version histroy
 
 
+## v0.3.0
+
+includes dayofyear_to_datetime function in time.py module
+
+fixed bug in DMA class penetration loss calculation
+
 ## v0.2.0
 
 includes subpackage `aerosolpy.instr` with classes for DMAs, CPC, and MPSS.

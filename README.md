@@ -79,7 +79,7 @@ Up-to-date Documentation and full API is hosted on [readthedocs.io](https://aero
 
 ## Roadmap
 
-1) Future updates on the following submodules: instr, growth, dynamics. 
+1) Future updates on the following submodules: growth, dynamics. 
 2) Publish a software paper describing the package.
 
 ## Contributing
