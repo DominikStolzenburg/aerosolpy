@@ -6,6 +6,7 @@
 from aerosolpy.math import integrate_dx_dlogdp
 
 from aerosolpy.time import matlab_to_datetime
+from aerosolpy.time import dayofyear_to_datetime
 
 from aerosolpy.units import ppt_to_percm3
 from aerosolpy.units import mugprom3_to_ppb
