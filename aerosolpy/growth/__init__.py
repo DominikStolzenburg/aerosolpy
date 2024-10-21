@@ -9,5 +9,7 @@
 
 from aerosolpy.growth.kinetic import KineticLimit
 from aerosolpy.growth.h2so4 import SulfuricAcid
-#from aerosolpy.growth.vbs import VbsModel
+from aerosolpy.growth.volatility import SimpolVolatility
+from aerosolpy.growth.volatility import TwoDimVolatility
+from aerosolpy.growth.vbs import VbsModel
 

@@ -11,7 +11,7 @@ from aerosolpy.kinetics import AerosolKinetics
 
 class SulfuricAcid(AerosolKinetics):
     """
-    calculates kinetic growth from H2SO4, H2O, NH3
+    calculates kinetic growth from H2SO4, H2O, NH3 following [26]_
     
     Parameters
     ----------
@@ -28,6 +28,12 @@ class SulfuricAcid(AerosolKinetics):
     ----------
     aeropy.InputError
         rh needs to be between 0 and 100
+    
+    References
+    ----------
+    .. [26] Stolzenburg, D., et al., "Enhanced growth rate of atmospheric 
+       particles from sulfuric acid", Atmos. Chem. Phys., vol. 20, 
+       pp. 7359–7372, 2020
     """
     def __init__(self, temp_kelvin=293.15, rh=60, mv_dry=98., mv_wet=134.,
                  **kwargs):
@@ -55,12 +61,12 @@ class SulfuricAcid(AerosolKinetics):
     
         Notes
         ----------
-        Coefficients rho[j][i] and calculation taken from [1]_
+        Coefficients rho[j][i] and calculation taken from [27]_
     
         References
         ----------
-        .. [1] C.E.L. Myhre, "Density and Surface Tension of Aqueous H2SO4 at Low 
-           Temperature", J. Chem. Eng. Data, vol. 43, pp. 617-622, 1998
+        .. [27] C.E.L. Myhre, "Density and Surface Tension of Aqueous H2SO4 at 
+           Low Temperature", J. Chem. Eng. Data, vol. 43, pp. 617-622, 1998
         """
         rho = [[999.8426,547.2659,526.2950e1,-621.3958e2,409.0293e3,
                 -159.6989e4,385.7411e4,-580.8064e4,530.1976e4,
@@ -229,11 +235,11 @@ class SulfuricAcid(AerosolKinetics):
         
         Notes
         ----------
-        calculation according to [1]_
+        calculation according to [28]_
     
         References
         ----------
-        .. [1] D.R.Hanson, F.Eisele, "Diffusion of H2SO4 in Humidified 
+        .. [28] D.R.Hanson, F.Eisele, "Diffusion of H2SO4 in Humidified 
            Nitrogen: Hydrated H2SO4", J. Phys. Chem. A, vol. 104, pp. 
            1715-1719, 2000
         """

@@ -5,7 +5,7 @@ from aerosolpy.kinetics import AerosolKinetics
 
 class KineticLimit(AerosolKinetics):
     """
-    calculates kinetic growth for arbitrary vapor
+    calculates kinetic growth for arbitrary vapor following [25]_
     
     Parameters
     ----------
@@ -15,6 +15,12 @@ class KineticLimit(AerosolKinetics):
         density of vapor in [kg m-3]   
     temp_kelvin : float, optional
         temperature in [k], default 293.15 K
+    
+    References
+    ----------
+    .. [25] Nieminen, T. et al., "Sub-10 nm particle growth by vapor 
+       condensation - effects of vapor molecule size and particle thermal 
+       speed", Atmos. Chem. Phys., vol. 10, pp. 9773–9779, 2010
     """
     def __init__(self, mv, rhov, temp_kelvin=293.15, **kwargs):
         self.mv = mv
