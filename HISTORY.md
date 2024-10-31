@@ -1,5 +1,9 @@
 # aerosolpy - version histroy
 
+## v0.4.0
+
+includes subpackage `aerosolpy.growth` with classes for kinetically-limited
+growth, H2SO4 growth, volatility calculation and VBS growth module
 
 ## v0.3.0
 

@@ -79,7 +79,7 @@ Up-to-date Documentation and full API is hosted on [readthedocs.io](https://aero
 
 ## Roadmap
 
-1) Future updates on the following submodules: growth, dynamics. 
+1) Future updates on the following submodules: dynamics. 
 2) Publish a software paper describing the package.
 
 ## Contributing
@@ -114,5 +114,4 @@ Licensed under the MIT license. See also LICENSE file.
 
 ## Project status
 
-Almost all code already exists, but the repo needs to be properly build, and documentations needs to be completed. 
-Release 0.1.0 is being prepared currently. 
+Release 0.4.0 includes ap.growth Module for growth rate calculations from vapor concentrations
