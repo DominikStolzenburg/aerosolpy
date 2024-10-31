@@ -236,6 +236,7 @@ class SulfuricAcid(AerosolKinetics):
         Notes
         ----------
         calculation according to [28]_
+        
     
         References
         ----------
@@ -279,7 +280,7 @@ class SulfuricAcid(AerosolKinetics):
         Returns
         ----------
         array_like
-            growth rates of nanoparticles at the kinetic limit in [nm h-1]
+            growth rates of nanoparticles from sulfuric acid in [nm h-1]
     
         Raises
         ----------

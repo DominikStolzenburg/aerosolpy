@@ -42,6 +42,12 @@ API reference
 
 .. autoclass:: aerosolpy.growth.SulfuricAcid
     :members:
+
+.. autoclass:: aerosolpy.growth.SimpolVolatility
+    :members:
+
+.. autoclass:: aerosolpy.growth.TwoDimVolatility
+    :members::
     
 .. autoclass:: aerosolpy.growth.VbsModel
     :members:

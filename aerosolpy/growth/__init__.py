@@ -2,8 +2,8 @@
 
 """aerosolpy.growth: submodule for aerosol growth calculations""" 
 
-# class KineticLimit and SulfuricAcid located in 
-# kinetic and h2so4 modules
+# class KineticLimit, SulfuricAcid, VbsModel located in 
+# kinetic, h2so4, vbs modules
 # are assigned to aerosolpy.growth namespace
 # such that e.g.,  ap.growth.KineticLimit() creates an instance of that class
 

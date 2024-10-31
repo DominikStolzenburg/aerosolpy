@@ -4,10 +4,10 @@ import numpy as np
 import bisect
 from scipy.integrate import solve_ivp
 #import necessary base package functions and classes 
-from aerosolpy.growth.h2so4 import SulfuricAcid
+from aerosolpy.kinetics import AerosolKinetics
 
 
-class VbsModel(SulfuricAcid):
+class VbsModel(AerosolKinetics):
     """
     a class for simulating monodisperse aerosol growth from volatility basis
     set (VBS), sulfuric acid and particle phase reactions
@@ -49,12 +49,14 @@ class VbsModel(SulfuricAcid):
     
     The system is solved in log-space to avoid negative growth rates.
     """
-    def __init__(self,time,vbs_traces,vbs_mass,vbs_logC,
+    def __init__(self, time, vbs_traces, vbs_mass, vbs_logC,
                  sa_trace='None',
                  activity='unity',
                  particle_phase='None',
-                 temp_kelvin=300,rh=50,
+                 temp_kelvin=300,
                  **kwargs):
+        
+        super().__init__(temp_kelvin=temp_kelvin, **kwargs)
         
         # load time axis, needs to be equal for SA and VBS
         self.time = np.array(time)
@@ -63,9 +65,37 @@ class VbsModel(SulfuricAcid):
         self.n_p = 1e3 
         self.dp_seed = 0.9
 
+        ## properties of organics
+        ## simulated within the VBS scheme
+        self.dk = 4.8*(300./temp_kelvin) # Kelvin-diameter in nm
+        self.rho_org = 1400 # equal for all VBS bins
+        self.log_c0 = np.array(vbs_logC)
+        self.c0 = 10**self.log_c0
+        self.m_org = np.array(vbs_mass)
+        self.dp_org = (((6/np.pi)*self.m_org*1.6605e-27
+                        /self.rho_org)**(1/3.)
+                       *1e9) # in nm
+        
+        # load VBS input data
+        vbs_traces = np.array(vbs_traces)
+        # extend gas-phase data if input is 0d
+        if ((vbs_traces.ndim==1) or (vbs_traces.shape[0]==1)):
+            self.time = np.arange(0,1000,10)
+            vbs_traces = np.repeat(vbs_traces.flatten()[:,np.newaxis],
+                                   len(self.time),axis=1).transpose()    
+        # convert organic concentration to saturation mass concentration
+        self.cv_org = vbs_traces[:,:]*1e6/6.022e23*self.m_org[:]*1e6
+        self.n_bins = self.cv_org.shape[1]
+        
+        #sulfuric acid
         if  isinstance(sa_trace, str):
             if sa_trace=='None':
-                self.rho_sa = 1800 
+                self.rho_sa = 1800      # H2SO4+H2O density [kg m-3]
+                self.m_sa = 98.        # vapor cluster mass in amu 
+                self.dp_sa = (((6./np.pi)*self.m_sa*1.6605e-27
+                               /self.rho_sa)**(1/3.)
+                              *1e9) # size of SA vapor in nm
+                self.diff_coeff_sa = self.diff_coeff_v(mv=98, diff_vol_v=51.96)
                 self.cs_sa_init = (np.pi/6.*(self.dp_seed*1e-9)**3
                                    *(self.n_p*1e6)*self.rho_sa*1e9)
                 self.interact_sa = 0.75 
@@ -78,8 +108,9 @@ class VbsModel(SulfuricAcid):
             self.rho_sa = 1600      # H2SO4+H2O(+NH3) density [kg m-3]
             self.m_sa = 134.        # vapor cluster mass in amu 
             self.dp_sa = (((6./np.pi)*self.m_sa*1.6605e-27
-                           /(self.rho_sa))**(1/3.)
+                           /self.rho_sa)**(1/3.)
                           *1e9) # size of SA vapor in nm
+            self.diff_coeff_sa = self.diff_coeff_v(mv=134, diff_vol_v=73.42)
             # seed is made of initial condensed phase SA
             self.cs_sa_init = (np.pi/6.*(self.dp_seed*1e-9)**3
                                *(self.n_p*1e6)*self.rho_sa*1e9)
@@ -88,30 +119,11 @@ class VbsModel(SulfuricAcid):
             # load H2SO4 input data 
             sa_trace = np.array(sa_trace)
             # extend input data if input is 0d
-            if (sa_trace.ndim==0):
+            if ((sa_trace.ndim==0) or (sa_trace.shape[0]==1)):
                 sa_trace = np.repeat(sa_trace, len(self.time), axis=0)
             # convert SA concentration to saturation mass concentration
             self.cv_sa = sa_trace[:]*1e6/6.022e23*self.m_sa*1e6
 
-        ## properties of organics
-        ## simulated within the VBS scheme
-        self.dk = 4.8*(300./temp_kelvin) # Kelvin-diameter in nm
-        self.rho_org = 1400 # equal for all VBS bins
-        # load organics input data
-        self.log_c0 = np.array(vbs_logC)
-        self.c0 = 10**self.log_c0
-        self.m_org = np.array(vbs_mass)
-        self.dp_org = (((6/np.pi)*(self.m_org*1.6605e-27/self.rho_org))**(1/3.)
-                       *1e9) # in nm
-        vbs_traces = np.array(vbs_traces)
-        # extend gas-phase data if input is 0d
-        if ((vbs_traces.ndim==1) or (vbs_traces.shape[0]==1)):
-            vbs_traces = np.repeat(vbs_traces.flatten()[:,np.newaxis],
-                                   len(self.time),axis=1).transpose()    
-        # convert organic concentration to saturation mass concentration
-        self.cv_org = vbs_traces[:,:]*1e6/6.022e23*self.m_org[:]*1e6
-        self.n_bins = self.cv_org.shape[1]
-        
         #activity coefficients
         if activity=='unity':
             self.solve_activity = False
@@ -124,11 +136,12 @@ class VbsModel(SulfuricAcid):
             raise ValueError(activity,
                              ("if not 'unity' must be 3 element tuple/list"))
         
+        # particle-phase reaction flag
         self.particle_phase = particle_phase
 
-        super().__init__(temp_kelvin=temp_kelvin, rh=rh, **kwargs)
+        
     
-    def _dynVBS(self,t,Ccomb):
+    def _dynVBS(self, t, c_comb):
         """
         set of differential equations for VBS dynamics
         
@@ -151,75 +164,75 @@ class VbsModel(SulfuricAcid):
         """
 
         # disentengle input
-        CvSa = Ccomb[:1] # gaseous sulfuric acid
-        CvOrg = Ccomb[1:self.numBins+1]
+        cv_sa = c_comb[:1] # gaseous sulfuric acid
+        cv_org = c_comb[1:self.n_bins+1]
         # solution of the problem is achieved in the logCs space 
         # this avoids negative values. However, init values cannot be 0 
         # but must take a very small number if necessary
-        CsSa = np.exp(Ccomb[1+self.numBins:self.numBins+2]) 
-        CsOrg = np.exp(Ccomb[2+self.numBins:2*self.numBins+2])
+        cs_sa = np.exp(c_comb[1+self.n_bins:self.n_bins+2]) 
+        #print(cs_sa)
+        cs_org = np.exp(c_comb[2+self.n_bins:2*self.n_bins+2])
 
         # raoult term
-        COA = np.sum(CsOrg)
-        Cpart = COA + self.interact_sa*CsSa
+        c_oa = np.sum(cs_org)
+        c_part = c_oa + self.interact_sa*cs_sa
         
         #calculate mass-weighted organic activity coefficients
         if self.solve_activity==True:
-            fC_s = np.ones(self.numBins)
-            for i in range(self.numBins):
-                nC_Cs_weighted = 0
-                nO_Cs_weighted = 0
-                for j in range(self.numBins):
+            fc_s = np.ones(self.n_bins)
+            for i in range(self.n_bins):
+                nc_cs_weighted = 0
+                no_cs_weighted = 0
+                for j in range(self.n_bins):
                     if j!=i:
-                        nC_Cs_weighted = nC_Cs_weighted+self.nC[j]*CsOrg[j]
-                        nO_Cs_weighted = nO_Cs_weighted+self.nO[j]*CsOrg[j]
-                fC_s[i] = 1./(1+nO_Cs_weighted/nC_Cs_weighted)
+                        nc_cs_weighted = nc_cs_weighted+self.n_c[j]*cs_org[j]
+                        no_cs_weighted = no_cs_weighted+self.n_o[j]*cs_org[j]
+                fc_s[i] = 1./(1+no_cs_weighted/nc_cs_weighted)
             #calculate solute carbon fractions
-            fC_i = 1./(1+self.nO[:]/self.nC[:])
+            fc_i = 1./(1+self.n_o[:]/self.n_c[:])
             # calculate activity coefficients
-            gamma_i = np.exp(-2*(self.nC[:]+self.nO[:])
-                             *((fC_i[:])**2+(fC_s[:])**2-2*fC_i[:]*fC_s[:])
-                             *(self.bCO)*(690/self.T)
+            gamma_i = np.exp(-2*(self.n_c[:]+self.n_o[:])
+                             *((fc_i[:])**2+(fc_s[:])**2-2*fc_i[:]*fc_s[:])
+                             *(self.b_co)*(690/self.temp_kelvin)
                              )
             gamma_i = np.nan_to_num(gamma_i,nan=1.0)
         else:
-            gamma_i = np.ones(self.numBins)
-        
+            gamma_i = np.ones(self.n_bins)
         
         # particle volume,diameter and mass from condensed mass concentration
-        Vp = ((CsSa/self.rho_sa + COA/self.rho_org)
+        vp = ((cs_sa/self.rho_sa + c_oa/self.rho_org)
               /(self.n_p*1e6*1e9)
               )
-        Dp = ((6/np.pi)*Vp)**(1/3.) * 1e9
+        dp = ((6/np.pi)*vp)**(1/3.) * 1e9
         
 
-        beta_i_p_org = self.coll_kernel_vp(self.dpOrg[:], Dp,
+        beta_i_p_org = self.coll_kernel_vp(self.dp_org[:], dp,
                                            self.rho_org, self.rho_org)
 
-        beta_i_p_sa = self.coll_kernel_vp_vdw(self.dp_sa, Dp,
+        beta_i_p_sa = self.coll_kernel_vp_vdw(self.dp_sa, dp,
                                               self.rho_sa, self.rho_sa,
                                               hamaker=5.2e-20,
-                                              diff_coeff_v=self.diff_coeff_h2so4(),
+                                              diff_coeff_v=self.diff_coeff_sa,
                                               method='sceats') 
 
         #kinetic H2SO4+H2O condensation
-        dlogCsSa_dt = ( (self.n_p*1e6) * (beta_i_p_sa*60) 
-                       * (CvSa/CsSa)
+        dlogcssa_dt = ( (self.n_p*1e6) * (beta_i_p_sa*60) 
+                       * (cv_sa/cs_sa)
                        ) 
         #organic condensation
-        dlogCsOrg_dt = ( (self.n_p*1e6) * (beta_i_p_org*60) 
-                        * ((CvOrg[:]/CsOrg[:]) 
-                           - self.Co[:]*gamma_i[:]*(1./Cpart)*10**(self.dk/Dp)
+        dlogcsorg_dt = ( (self.n_p*1e6) * (beta_i_p_org*60) 
+                        * ((cv_org[:]/cs_org[:]) 
+                           - self.c0[:]*gamma_i[:]*(1./c_part)*10**(self.dk/dp)
                            )
-                        ) 
+                        )
         
         # use biscetion search to find proper derivative
-        idx = bisect.bisect_left(self.time,t)
+        idx = bisect.bisect_left(self.time, t)
 
-        dCvSa_dt = ((self.gasConcSa[idx]-self.gasConcSa[idx-1])
+        dcvsa_dt = ((self.cv_sa[idx]-self.cv_sa[idx-1])
                     /(self.time[idx]-self.time[idx-1])
                     )
-        dCvOrg_dt = ((self.gasConcOrg[idx,:]-self.gasConcOrg[idx-1,:])
+        dcvorg_dt = ((self.cv_org[idx,:]-self.cv_org[idx-1,:])
                      /(self.time[idx]-self.time[idx-1])
                      )
         
@@ -227,33 +240,39 @@ class VbsModel(SulfuricAcid):
             if isinstance(self.particle_phase, float):
                 L = self.particle_phase
                 P = self.particle_phase
-                for i in range(self.numBins):
+                for i in range(self.n_bins):
                     if i==0:
-                        dlogCsOrg_dt[i] = dlogCsOrg_dt[i] - L
-                    if ((i > 0) and (i!=self.numBins-1)):
-                        dlogCsOrg_dt[i] = dlogCsOrg_dt[i] - L + P*CsOrg[i-1]/CsOrg[i]
-                    if i==self.numBins-1:
-                        dlogCsOrg_dt[i] = dlogCsOrg_dt[i] + P*CsOrg[i-1]/CsOrg[i]
+                        dlogcsorg_dt[i] = (dlogcsorg_dt[i]
+                                           - L)
+                    if ((i > 0) and (i!=self.n_bins-1)):
+                        dlogcsorg_dt[i] = (dlogcsorg_dt[i]
+                                           - L 
+                                           + P*cs_org[i-1]/cs_org[i])
+                    if i==self.n_bins-1:
+                        dlogcsorg_dt[i] = (dlogcsorg_dt[i]
+                                           + P*cs_org[i-1]/cs_org[i])
                         
             elif isinstance(self.particle_phase, tuple):
                 L = self.particle_phase[0]
                 P = self.particle_phase[0]
                 k = self.particle_phase[1]
-                for i in range(self.numBins):   
+                for i in range(self.n_bins):   
                     if i<len(L):
-                            dlogCsOrg_dt[i] = dlogCsOrg_dt[i] - L[i]
+                            dlogcsorg_dt[i] = (dlogcsorg_dt[i]
+                                               - L[i])
                     elif i>=k and i<len(L)+k:
-                            dlogCsOrg_dt[i] = dlogCsOrg_dt[i]  + P[i-k]*CsOrg[i-k]/CsOrg[i]
+                            dlogcsorg_dt[i] = (dlogcsorg_dt[i]
+                                               + P[i-k]*cs_org[i-k]/cs_org[i])
 
             else:
                 ValueError(self.particle_phase)
-        
-        return np.concatenate((np.array([dCvSa_dt]),
-                               dCvOrg_dt,
-                               dlogCsSa_dt,
-                               dlogCsOrg_dt))
+
+        return np.concatenate((np.array([dcvsa_dt]),
+                               dcvorg_dt,
+                               dlogcssa_dt,
+                               dlogcsorg_dt))
     
-    def _solve(self,dt=0.05):
+    def _solve(self, dt=0.05):
         """
         solver for set of differential equations
         
@@ -265,24 +284,28 @@ class VbsModel(SulfuricAcid):
         Notes
         ----------
         uses scipy.integrate solve_ivp, does not provide non-negativity 
-        constraint, which is different to MATLAB version
+        constraint, which is different to MATLAB version. 
+        Uses log-space for solution, and therefore implicitly achieves non-
+        neagtivity. 
         """
-        # initial condition for differentials, vapor Cv at t=0 and logCs at t=0
-        # while CsOrg ideally is 0, logCs cannot be inf
-        # therefore logCsOrg approximated to a tiny value
-        Cinit = np.concatenate((np.array([self.gasConcSa[0]]),
-                                self.gasConcOrg[0,:],
-                                np.log(np.array([self.cs_sa_init])),
-                                -25*np.ones(self.numBins))
-                               )
+        # initial condition for differentials, 
+        # vapor cv at t=0 and log_cs at t=0
+        # while cs_org ideally is 0, log_cs cannot be inf
+        # therefore log_cs_org approximated to a tiny value
+        c_init = np.concatenate((np.array([self.cv_sa[0]]),
+                                 self.cv_org[0,:],
+                                 np.log(np.array([self.cs_sa_init])),
+                                 -25*np.ones(self.n_bins)
+                                 )
+                                )
 
-
+        #print(c_init)
         # time interval for solution
         t0 = self.time[0] 
         tend = self.time[-1]
 
-        sol = solve_ivp(self._dynVBS, [t0, tend], Cinit, 
-                        t_eval=np.arange(t0,tend,dt),
+        sol = solve_ivp(self._dynVBS, [t0, tend], c_init, 
+                        t_eval=np.arange(t0, tend, dt),
                         method='BDF',
                         rtol=1e-12,atol=1e-12)
         ts = sol.t
@@ -302,123 +325,163 @@ class VbsModel(SulfuricAcid):
             system state variables for each time/diameter step:
             diameter [nm], 
             total growth rate [nm h-1], 
-            growth rate per vbs bin [nm h-1], 
-            total condensed organic mass [ug m-3],
-            condensed phase mass concentration per bin [ug m-3],
-            vapor phase concentration [cm-3],
-            vapor phase mass concentration per bin [ug m-3],
-            mass flux to condensed phase per bin [ug m-3],
-            saturation ratio per bin [ug m-3]
+            growth rate per vbs bin (including SA) [nm h-1],
+            time of the step [min]
                     
         Notes
         ----------
         call for full output including all concentrations, fluxes, sat. ratio
         """
-        t_prod, Cprod = self._solve()
-            
+        t_prod, c_prod = self._solve()
         # calculates concentration and diameter evolution from solver solution
-        CvSa_prod = Cprod[:1,:]
-        CvOrg_prod = Cprod[1:self.numBins+1,:]
-        CsSa_prod = np.exp(Cprod[self.numBins+1:self.numBins+2,:])
-        CsOrg_prod = np.exp(Cprod[self.numBins+2:2*self.numBins+2,:])
-        
-        COA_prod = np.sum(CsOrg_prod,axis=0)
-        Cpart_prod = COA_prod + self.interact_sa*CsSa_prod
+        cv_sa_prod = c_prod[:1,:]
+        cv_org_prod = c_prod[1:self.n_bins+1,:]
+
+        cs_sa_prod = np.exp(c_prod[self.n_bins+1:self.n_bins+2,:])
+        cs_org_prod = np.exp(c_prod[self.n_bins+2:2*self.n_bins+2,:])
+
+        c_oa_prod = np.sum(cs_org_prod,axis=0)
+        c_part_prod = c_oa_prod + self.interact_sa*cs_sa_prod
         
         n_p_prod = self.n_p*np.ones(t_prod.shape[0])        
-        Vp_prod = ((CsSa_prod[:]/self.rho_sa + COA_prod[:]/self.rho_org)
+        vp_prod = ((cs_sa_prod[:]/self.rho_sa + c_oa_prod[:]/self.rho_org)
                    /((n_p_prod[:]*1e6)*1e9)
                    )
-        Dp_prod = ((6/np.pi)*Vp_prod)**(1/3.) * 1e9
+        dp_prod = ((6/np.pi)*vp_prod)**(1/3.) * 1e9
 
         if self.solve_activity==True:
             #calculate mass-weighted solvent carbon fraction
-            fC_s = np.ones((self.numBins, t_prod.shape[0]))
-            OtoC_s = np.ones((self.numBins, t_prod.shape[0]))
-            for i in range(self.numBins):
-                nC_Cs_weighted = np.zeros(t_prod.shape[0])
-                nO_Cs_weighted = np.zeros(t_prod.shape[0])
-                for j in range(self.numBins):
+            fc_s = np.ones((self.n_bins, t_prod.shape[0]))
+
+            for i in range(self.n_bins):
+                nc_cs_weighted = np.zeros(t_prod.shape[0])
+                no_cs_weighted = np.zeros(t_prod.shape[0])
+                for j in range(self.n_bins):
                     if j!=i:
-                        nC_Cs_weighted[:] = (nC_Cs_weighted[:]
-                                             +self.nC[j]*CsOrg_prod[j,:]
+                        nc_cs_weighted[:] = (nc_cs_weighted[:]
+                                             +self.n_c[j]*cs_org_prod[j,:]
                                              )
-                        nO_Cs_weighted[:] = (nO_Cs_weighted[:]
-                                             +self.nO[j]*CsOrg_prod[j,:]
+                        no_cs_weighted[:] = (no_cs_weighted[:]
+                                             +self.n_o[j]*cs_org_prod[j,:]
                                              )
-                OtoC_s[i,:] = nO_Cs_weighted[:]/nC_Cs_weighted[:]
-                fC_s[i,:] = 1./(1+nO_Cs_weighted[:]/nC_Cs_weighted[:])
+
+                fc_s[i,:] = 1./(1+no_cs_weighted[:]/nc_cs_weighted[:])
             #calculate solute carbon fractions
-            fC_i = 1./(1+self.nO[:]/self.nC[:])
-            #OtoC_i = self.nO[:]/self.nC[:]
+            fc_i = 1./(1+self.n_o[:]/self.n_c[:])
+
             # calculate activity coefficients
-            gamma_prod = np.exp(-2*(self.nC[:,np.newaxis]+self.nO[:,np.newaxis])
-                                *((fC_i[:,np.newaxis])**2+(fC_s[:,:])**2
-                                  -2*fC_i[:,np.newaxis]*fC_s[:,:]
+            gamma_prod = np.exp(-2*(self.n_c[:,np.newaxis]+self.n_o[:,np.newaxis])
+                                *((fc_i[:,np.newaxis])**2+(fc_s[:,:])**2
+                                  -2*fc_i[:,np.newaxis]*fc_s[:,:]
                                   )
-                                *(self.bCO)*(690/self.T)
+                                *(self.b_co)*(690/self.temp_kelvin)
                                 )
         else:
-            gamma_prod = np.ones((self.numBins,t_prod.shape[0]))
+            gamma_prod = np.ones((self.n_bins,t_prod.shape[0]))
 
         
-        beta_i_p_org = self.coll_kernel_vp(self.dpOrg[:,np.newaxis],
-                                           Dp_prod,
+        beta_i_p_org = self.coll_kernel_vp(self.dp_org[:,np.newaxis],
+                                           dp_prod,
                                            self.rho_org,
                                            self.rho_org)
 
-        beta_i_p_sa = self.coll_kernel_vdw(self.dp_sa,
-                                           Dp_prod,
-                                           self.rho_sa,
-                                           self.rho_sa,
-                                           hamaker=5.2e-20,
-                                           diff_coeff_v=self.DvSa,
-                                           method='sceats') 
+        beta_i_p_sa = self.coll_kernel_vp_vdw(self.dp_sa,
+                                              dp_prod,
+                                              self.rho_sa,
+                                              self.rho_sa,
+                                              hamaker=5.2e-20,
+                                              diff_coeff_v=self.diff_coeff_sa,
+                                              method='sceats') 
         
         #kinetic H2SO4+H2O condensation
-        dCsSa_dt = ( (self.n_p*1e6) * (beta_i_p_sa[:])
-                    * CvSa_prod[:]
+        dcssa_dt = ( (self.n_p*1e6) * (beta_i_p_sa[:])
+                    * cv_sa_prod[:]
                     )
-        ddpdt_sa = ( 2/(np.pi*self.rho_sa*(Dp_prod[:]*1e-9)**2*self.n_p*1e6)
-                    *dCsSa_dt
+        ddpdt_sa = ( 2/(np.pi*self.rho_sa*(dp_prod[:]*1e-9)**2*self.n_p*1e6)
+                    *dcssa_dt
                     )*3600
         #organic condensation
-        dCsOrg_dt = ( (self.n_p*1e6) * (beta_i_p_org[:,:])   
-                     * (CvOrg_prod[:,:] - gamma_prod[:,:]*CsOrg_prod[:,:]/Cpart_prod[:]*10**(self.dk/Dp_prod[:]) * self.Co[:,np.newaxis])
-                     )
+        dcsorg_dt = ( (self.n_p*1e6) * (beta_i_p_org[:,:])   
+                     * (cv_org_prod[:,:] 
+                        -(self.c0[:,np.newaxis] 
+                          * gamma_prod[:,:]*cs_org_prod[:,:]/c_part_prod[:]
+                          *10**(self.dk/dp_prod[:])
+                          )                    
+                        )
+                     ) 
+        
         if self.particle_phase!='None':
             if isinstance(self.particle_phase, float):
                 L = self.particle_phase
                 P = self.particle_phase
-                for i in range(self.numBins):
+                for i in range(self.n_bins):
                     if i==0:
-                        dCsOrg_dt[i] = dCsOrg_dt[i] - L*CsOrg_prod[i]
-                    if ((i > 0) and (i!=self.numBins-1)):
-                            dCsOrg_dt[i] = dCsOrg_dt[i] - L*CsOrg_prod[i] + P*CsOrg_prod[i-1]
-                    if i==self.numBins-1:
-                        dCsOrg_dt[i] = dCsOrg_dt[i] + P*CsOrg_prod[i-1]
+                        dcsorg_dt[i] = (dcsorg_dt[i]
+                                        - L*cs_org_prod[i])
+                    if ((i > 0) and (i!=self.n_bins-1)):
+                            dcsorg_dt[i] = (dcsorg_dt[i] 
+                                            - L*cs_org_prod[i] 
+                                            + P*cs_org_prod[i-1])
+                    if i==self.n_bins-1:
+                        dcsorg_dt[i] = (dcsorg_dt[i] 
+                                        + P*cs_org_prod[i-1])
                         
             elif isinstance(self.particle_phase, tuple):
                 L = self.particle_phase[0]
                 P = self.particle_phase[0]
                 k = self.particle_phase[1]
-                for i in range(self.numBins):
+                for i in range(self.n_bins):
                     if i<len(L):
-                            dCsOrg_dt[i] = dCsOrg_dt[i] - L[i]*CsOrg_prod[i]
+                            dcsorg_dt[i] = (dcsorg_dt[i]
+                                            - L[i]*cs_org_prod[i])
                     if i>=k and i<len(L)+k:
-                            dCsOrg_dt[i] = dCsOrg_dt[i]  + P[i-k]*CsOrg_prod[i-k]
+                            dcsorg_dt[i] = (dcsorg_dt[i]
+                                            + P[i-k]*cs_org_prod[i-k])
 
             else:
                 ValueError(self.particle_phase)
             
-        ddpdt_org = (2/(np.pi*self.rho_org*(Dp_prod[:]*1e-9)**2*self.n_p*1e6)
-                     *dCsOrg_dt
+        ddpdt_org = (2/(np.pi*self.rho_org*(dp_prod[:]*1e-9)**2*self.n_p*1e6)
+                     *dcsorg_dt
                      )*3600
         
         
-        Dp_prod = np.squeeze(Dp_prod)
+        dp_prod = np.squeeze(dp_prod)
+
         gr_bins = np.concatenate((ddpdt_sa,ddpdt_org),axis=0)
         gr_tot = np.sum(gr_bins,axis=0)
         
-        return (Dp_prod,gr_tot,gr_bins,
-                COA_prod,CvSa_prod,CvOrg_prod,CsSa_prod,CsOrg_prod,gamma_prod,t_prod)
+        return (dp_prod,gr_tot,gr_bins,t_prod)
+    
+    def growth_rate(self, dp):
+        """
+        calculates VBS growth rates at diameter dp and set-up conditions
+        of the VbsModel
+    
+        Parameters
+        ----------
+        dp : array_like of float
+            particle mass diameter in [nm], subtract 0.3 from mob. diameter
+        
+        Returns
+        -------
+        array_like
+            growth rates of nanoparticles from VbsModel in [nm h-1]
+        """
+        t_prod, c_prod = self._solve()
+        
+        cs_sa_prod = np.exp(c_prod[self.n_bins+1:self.n_bins+2,:])
+        cs_org_prod = np.exp(c_prod[self.n_bins+2:2*self.n_bins+2,:])
+        c_oa_prod = np.sum(cs_org_prod,axis=0)
+
+        n_p_prod = self.n_p*np.ones(t_prod.shape[0])        
+        vp_prod = ((cs_sa_prod[:]/self.rho_sa + c_oa_prod[:]/self.rho_org)
+                   /((n_p_prod[:]*1e6)*1e9)
+                   )
+        dp_prod = ((6/np.pi)*vp_prod)**(1/3.) * 1e9
+        dp_prod = np.squeeze(dp_prod)
+        dpdt = np.gradient(dp_prod, t_prod/60.)
+
+        idx = (np.abs(dp_prod - dp)).argmin()
+        
+        return dpdt[idx]
