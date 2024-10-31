@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = "aerosolpy",
-    version = "0.3.0",
+    version = "0.4.0",
     author = "Dominik Stolzenburg",
     author_email = "dominik.stolzenburg@tuwien.ac.at",
     description = ("aerosolpy is a collection of functions and " 

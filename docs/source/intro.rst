@@ -128,3 +128,71 @@ It then contains methods which can invert MPSS data::
 
 where ``nsd`` is then the inverted size distribution taking into account 
 multiple charges on aerosol particles up to ``imax=5``. 
+
+Subpackage: aerosolpy.growth
+----------------------------
+
+The ``aerosolpy.growth`` package provides additional classes for theoretical
+calculations of particle growth rates from vapor concentrations. 
+
+The class ``ap.growth.KineticLimit`` provides a calculus for growth rates of
+vapors which condense purely kinetically, i.e. there is no evaporation of 
+the vapor back into the gas-phase, but based only on vapor properties such 
+as molecular mass and density::
+
+        kg = ap.growth.KineticLimit(98, 1830)
+        gr = kg.growth_rate(5.0, 2e7, kernel='hard sphere')
+
+Particle size at which the growth rate is calculated (in nm) and condensing
+vapor concentration are defined in the ``ap.growth.KineticLimit.growth_rate``
+method. Optional is the usage of a collision frequency kernel which e.g. 
+includes collision enhancement due to van der Waals interactions
+
+The class ``ap.growth.SulfuricAcid()`` is based on the same assumption that
+sulfuric acid condenses at the kinetic limit, but includes a treatement of
+co-condensing water and more precise knowledge on sulfuric acid properties, but 
+the basic principle is identical::
+
+        sa = ap.growth.SulfuricAcid(temp_kelvin=278.15)
+        gr = sa.growth_rate(5.0, 1e7, hamaker=5.2e-20, 
+                            kernel='sceats', hydration='dry measurement'
+                            )
+
+We see that there are more optional arguments, i.e. specifiying the assumed
+hydration of the vapor molecules and particles during growth rate measurement.
+The calculus of this class follows Stolzenburg et al. (2020), Atmos. Chem. 
+Phys.
+
+The class ``ap.growth.VbsModel()`` is used to calculate the condensation of 
+organics with different volatility. It relies on the volatility-basis-set
+which groups together organic molecules of similar volatility (vapor pressure).
+The input for the growth model is more complex compared to the other clases, as
+the model calculates a numerical solution to the growth problem (and not an 
+analytical solution as the other two classes). The model first needs to be set-
+up with the input::
+
+        vbs = ap.growth.VbsModel(0, conc, mass, logc)
+    
+where ``conc``, ``mass``, ``logc`` are each a ``np.array`` containing the 
+gas-phase concentrations of the VBS-bins (here 1D, but time evolution is 
+possible as well if the first argument of the model is a time-step ``np.array``
+), the average moelcular masses of the VBS-bins, and the saturation vapor 
+pressure of the bins (in terms of logarithmic saturation mass concentration).
+After model-setup, it can be run with the ``ap.growth.VbsModel.calc_vbs_dynamics``
+method::
+
+         dp, gr, bins, t = vbs.calc_vbs_dynamics()
+
+This outputs the entire ``dp`` versus ``gr`` trajectory of the growing 
+particles, together with the growth rate per bin (``bins``). If only the
+growth rate  at a specific diameter is of interest, the syntax is the same as 
+with the other classes::
+
+        gr = vbs.growth_rate(5.0)
+
+The class ``ap.growth.VbsModel`` additionally contains more complex versions 
+of the growth model, which also include co-condensation of sulfuric acid,
+dynamically calculated activity coefficients and simnple particle-phase 
+reaction schemes. Details can be found in the index. 
+
+        
