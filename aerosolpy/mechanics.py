@@ -285,6 +285,14 @@ class AerosolMechanics:
         literature (often using slightly different constants) or including/
         not including the factor sqrt(2) from the reduced mass. 
         
+        For the often used H2SO4, using mv=134 and diff_vol_v=72.42 assuming
+        a doubly hydrated sulfuric acid monomer, the results are in good
+        agreement with Hanson and Eisele at RH=60 
+        
+        See also
+        --------
+        aerosolpy.growth.SulfuricAcid.diff_coeff_h2so4
+        
         References
         ----------
         .. [7] E.N. Fuller, P.D. Schettler, and J.C. Giddings, New method for 
@@ -368,12 +376,12 @@ class AerosolMechanics:
             number of charges carried by particle
         
         Returns
-        ----------
+        -------
         array_like
             particle diameter in [nm]
         
         See also
-        ----------
+        --------
         scipy.optimize.brentq
         """
         e0=1.609e-19

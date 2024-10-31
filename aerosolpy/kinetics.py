@@ -90,10 +90,10 @@ class AerosolKinetics(AerosolMechanics):
         return collKernel
 
     def coll_kernel_vp(self, dv, dp, rhov=1000, rhop=1000,
-                      alpha=1, 
-                      diff_coeff_v=None,
-                      dynamic_regime='transition',
-                      mv=None): 
+                       alpha=1, 
+                       diff_coeff_v=None,
+                       dynamic_regime='transition',
+                       mv=None): 
         """
         coagulation kernel for vapour molecules with particles
         
@@ -341,9 +341,7 @@ class AerosolKinetics(AerosolMechanics):
             kd = 2 * np.pi * (dp+dv) * (diff_coeff_p+diff_coeff_v) * E_0
             kt = kk* (np.sqrt(1+(kk/(2*kd))**2) - (kk/(2*kd)))   
         else:
-            raise ValueError(method,
-                             ("sceats or fuchs")
-                             )
+            raise ValueError(method, "sceats or fuchs")
         
         if dynamic_regime=='transition':
             return kt
@@ -352,6 +350,4 @@ class AerosolKinetics(AerosolMechanics):
         elif dynamic_regime=='continuum':
             return kd
         else:
-            raise ValueError(dynamic_regime,
-                             ("transition, kinetic or continuum")
-                             )
+            raise ValueError(dynamic_regime,"transition, kinetic or continuum")
