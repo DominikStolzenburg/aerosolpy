@@ -1,5 +1,11 @@
 # aerosolpy - version histroy
 
+## v1.0.0
+
+`aerosolpy.growth.VbsModel` includes particle phase diffusion. 
+no backward-compatibility to previous versions due to changes in method
+definitions
+
 ## v0.4.0
 
 includes subpackage `aerosolpy.growth` with classes for kinetically-limited
