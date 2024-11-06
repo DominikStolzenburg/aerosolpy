@@ -31,9 +31,13 @@ class VbsModel(AerosolKinetics):
         whether to solve for particle phase activity coefficients or not
         default is 'unity', if tuple, it contains the O-C non-linearity 
         coefficient to be used, nC and nO for each volatility bin
-    particle_phase : string or float or 3-tuple
+    particle_reactions : string or float or 3-tuple
         whether to calculate particle phase reactions or not.
         default is 'None'. 
+    particle_diffusion : string or float
+        whether to take into account particle-phase diffusion limitations.
+        float is diffusion coefficient in [cm2 s-1]
+        default is 'None'.
     temp_kelvin : float, optional
         temperature in [K], default 300 K
     rh : float, optional
@@ -48,11 +52,17 @@ class VbsModel(AerosolKinetics):
     be set by user in _solve function
     
     The system is solved in log-space to avoid negative growth rates.
+    
+    particle_reactions and particle_diffusion should not be used simultaneously
+    as the solution for the particle-phase diffusion assume a negligible 
+    reactivity of the solute. Moreover, activity coefficients are set to 1
+    if particle_diffusion is calculated
     """
     def __init__(self, time, vbs_traces, vbs_mass, vbs_logC,
                  sa_trace='None',
                  activity='unity',
-                 particle_phase='None',
+                 particle_reactions='None',
+                 particle_diffusion='None',
                  temp_kelvin=300,
                  **kwargs):
         
@@ -137,7 +147,10 @@ class VbsModel(AerosolKinetics):
                              ("if not 'unity' must be 3 element tuple/list"))
         
         # particle-phase reaction flag
-        self.particle_phase = particle_phase
+        self.particle_reactions = particle_reactions
+        
+        # particle-phase diffusion flag
+        self.particle_diffusion = particle_diffusion
 
         
     
@@ -226,6 +239,25 @@ class VbsModel(AerosolKinetics):
                            )
                         )
         
+        #modified condensation in case of particle-phase diffusion limitation
+        if (self.particle_diffusion!='None'):
+            if isinstance(self.particle_diffusion, float):
+                diff_limit = (1./
+                              (1+((dp*1e-9)**2*self.n_p*1e6
+                                  *self.c0[:]*beta_i_p_org*60
+                                  /(60*self.particle_diffusion*6e-3*c_part)
+                                  )
+                               )
+                              )
+                # activity coefficients are set to be 1
+                dlogcsorg_dt = ((self.n_p*1e6) * (beta_i_p_org*60) * diff_limit
+                                * ((cv_org[:]/cs_org[:]) 
+                                   - self.c0[:]*(1./c_part)*10**(self.dk/dp)
+                                   )
+                                )
+        else:
+            dlogcsorg_dt = dlogcsorg_dt
+        
         # use biscetion search to find proper derivative
         idx = bisect.bisect_left(self.time, t)
 
@@ -236,10 +268,12 @@ class VbsModel(AerosolKinetics):
                      /(self.time[idx]-self.time[idx-1])
                      )
         
-        if self.particle_phase!='None':
-            if isinstance(self.particle_phase, float):
-                L = self.particle_phase
-                P = self.particle_phase
+        if self.particle_reactions!='None':
+            # model case of gradual breakdown of each bin into the next
+            # higher volatility bin
+            if isinstance(self.particle_reactions, float):
+                L = self.particle_reactions
+                P = self.particle_reactions
                 for i in range(self.n_bins):
                     if i==0:
                         dlogcsorg_dt[i] = (dlogcsorg_dt[i]
@@ -251,11 +285,13 @@ class VbsModel(AerosolKinetics):
                     if i==self.n_bins-1:
                         dlogcsorg_dt[i] = (dlogcsorg_dt[i]
                                            + P*cs_org[i-1]/cs_org[i])
-                        
-            elif isinstance(self.particle_phase, tuple):
-                L = self.particle_phase[0]
-                P = self.particle_phase[0]
-                k = self.particle_phase[1]
+            
+            # model case of breakdown of the first (least volatile) bins
+            # into the bins shifted by k.
+            elif isinstance(self.particle_reactions, tuple):
+                L = self.particle_reactions[0]
+                P = self.particle_reactions[0]
+                k = self.particle_reactions[1]
                 for i in range(self.n_bins):   
                     if i<len(L):
                             dlogcsorg_dt[i] = (dlogcsorg_dt[i]
@@ -265,7 +301,8 @@ class VbsModel(AerosolKinetics):
                                                + P[i-k]*cs_org[i-k]/cs_org[i])
 
             else:
-                ValueError(self.particle_phase)
+                ValueError(self.particle_reactions)
+            
 
         return np.concatenate((np.array([dcvsa_dt]),
                                dcvorg_dt,
@@ -328,9 +365,6 @@ class VbsModel(AerosolKinetics):
             growth rate per vbs bin (including SA) [nm h-1],
             time of the step [min]
                     
-        Notes
-        ----------
-        call for full output including all concentrations, fluxes, sat. ratio
         """
         t_prod, c_prod = self._solve()
         # calculates concentration and diameter evolution from solver solution
@@ -401,7 +435,21 @@ class VbsModel(AerosolKinetics):
                     *dcssa_dt
                     )*3600
         #organic condensation
-        dcsorg_dt = ( (self.n_p*1e6) * (beta_i_p_org[:,:])   
+        if self.particle_diffusion!='None':
+            if isinstance(self.particle_diffusion, float):
+                diff_limit = (1./
+                              (1+((dp_prod[:]*1e-9)**2*self.n_p*1e6
+                                  *self.c0[:, np.newaxis]*beta_i_p_org[:,:]*60
+                                  /(60*self.particle_diffusion*6e-3*c_part_prod[:])
+                                  )
+                               )
+                              )
+
+        else:
+            diff_limit = 1
+        
+        
+        dcsorg_dt = ( (self.n_p*1e6) * (beta_i_p_org[:,:]) * diff_limit
                      * (cv_org_prod[:,:] 
                         -(self.c0[:,np.newaxis] 
                           * gamma_prod[:,:]*cs_org_prod[:,:]/c_part_prod[:]
@@ -410,10 +458,10 @@ class VbsModel(AerosolKinetics):
                         )
                      ) 
         
-        if self.particle_phase!='None':
-            if isinstance(self.particle_phase, float):
-                L = self.particle_phase
-                P = self.particle_phase
+        if self.particle_reactions!='None':
+            if isinstance(self.particle_reactions, float):
+                L = self.particle_reactions
+                P = self.particle_reactions
                 for i in range(self.n_bins):
                     if i==0:
                         dcsorg_dt[i] = (dcsorg_dt[i]
@@ -426,10 +474,10 @@ class VbsModel(AerosolKinetics):
                         dcsorg_dt[i] = (dcsorg_dt[i] 
                                         + P*cs_org_prod[i-1])
                         
-            elif isinstance(self.particle_phase, tuple):
-                L = self.particle_phase[0]
-                P = self.particle_phase[0]
-                k = self.particle_phase[1]
+            elif isinstance(self.particle_reactions, tuple):
+                L = self.particle_reactions[0]
+                P = self.particle_reactions[0]
+                k = self.particle_reactions[1]
                 for i in range(self.n_bins):
                     if i<len(L):
                             dcsorg_dt[i] = (dcsorg_dt[i]
@@ -439,7 +487,7 @@ class VbsModel(AerosolKinetics):
                                             + P[i-k]*cs_org_prod[i-k])
 
             else:
-                ValueError(self.particle_phase)
+                ValueError(self.particle_reactions)
             
         ddpdt_org = (2/(np.pi*self.rho_org*(dp_prod[:]*1e-9)**2*self.n_p*1e6)
                      *dcsorg_dt
@@ -467,6 +515,11 @@ class VbsModel(AerosolKinetics):
         -------
         array_like
             growth rates of nanoparticles from VbsModel in [nm h-1]
+        
+        Notes
+        -----
+        Uses numpy.gradient to determine the growth rate from the model solution
+        which is given in condensed mass produced at certain times
         """
         t_prod, c_prod = self._solve()
         

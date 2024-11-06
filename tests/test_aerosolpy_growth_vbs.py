@@ -13,6 +13,7 @@ conc = np.array([1.088e6,7.534e5,7.300e5,2.101e6,2.577e6,6.001e6,
                  1.323e7,1.599e7,1.586e7,2.377e7,1.416e7,1.180e7])
 
 mass = 	np.array([507,456,450,422,362,331,291,349,267,246,228,226])
+    
 
 def test_calc_vbs_dynamics():
     vbs = ap.growth.VbsModel(0, conc, mass, logc)
@@ -40,9 +41,35 @@ def test_calc_vbs_dynamics_full():
     vbs = ap.growth.VbsModel(0, conc, mass, logc, 
                              sa_trace=np.array([1e7]),
                              activity=activity,
-                             particle_phase=([6.,6.,6.,6.,6.,6.],6)
+                             particle_reactions=([6.,6.,6.,6.,6.,6.],6)
                              )
     dp, gr, bins, t = vbs.calc_vbs_dynamics()
     assert np.all(dp > 0)
     assert np.all(gr[dp>1.0] > 0)
+
+def test_particle_diffusion():
+
+    #test if high diffusivity and no diffusivity obtain same result
+    vbs1 = ap.growth.VbsModel(0, conc, mass, logc, 
+                              sa_trace=np.array([1e7])
+                              )
+    vbs2 = ap.growth.VbsModel(0, conc, mass, logc, 
+                             sa_trace=np.array([1e7]),
+                             particle_diffusion=1e-5
+                             )
+    dp1, gr1, bins1, t1 = vbs1.calc_vbs_dynamics()
+    dp2, gr2, bins2, t2 = vbs2.calc_vbs_dynamics()
+    idx1 = (np.abs(dp1 - 10.0)).argmin()
+    idx2 = (np.abs(dp2 - 10.0)).argmin()    
+    assert gr2[idx2]==approx(gr1[idx1], rel=1e-2)
+    
+    #test if low diffusivity and no diffusivity obtain different result
+    vbs3 = ap.growth.VbsModel(0, conc, mass, logc, 
+                             sa_trace=np.array([1e7]),
+                             particle_diffusion=1e-17
+                             )
+    dp3, gr3, bins3, t3 = vbs3.calc_vbs_dynamics()
+    idx3 = (np.abs(dp3 - 10.0)).argmin()
+    
+    assert gr1[idx1]!=approx(gr3[idx3], rel=1e-2)
     
