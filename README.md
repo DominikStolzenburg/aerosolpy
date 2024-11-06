@@ -114,4 +114,5 @@ Licensed under the MIT license. See also LICENSE file.
 
 ## Project status
 
-Release 0.4.0 includes ap.growth Module for growth rate calculations from vapor concentrations
+Release 1.0.0 includes ap.growth Module for growth rate calculations from vapor concentrations,
+including particle-phase diffusion limitations
