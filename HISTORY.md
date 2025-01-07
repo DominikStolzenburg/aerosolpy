@@ -1,5 +1,10 @@
 # aerosolpy - version histroy
 
+## v1.0.1
+
+bug fix in ap.instr.Mpss.std_inv() making interpolation kind an optional 
+argument
+
 ## v1.0.0
 
 `aerosolpy.growth.VbsModel` includes particle phase diffusion. 
