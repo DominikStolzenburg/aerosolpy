@@ -300,7 +300,7 @@ class Mpss(AerosolMechanics):
              *q_sample*t_res[:])
         return n
         
-    def std_inv(self, Craw, imax=1):  
+    def std_inv(self, Craw, imax=1, interpolation='cubic'):  
         """
         standard point-by-point inversion of a MPSS response 
         using multiple charge correction
@@ -371,7 +371,7 @@ class Mpss(AerosolMechanics):
                 if len(self.channels[ch:])>1:
                     interpnsd = interp1d(self.channels[ch:],
                                          nsd[ch:],
-                                         kind='cubic')
+                                         kind=interpolation)
                 while volts[ch] > volts_max/(i+1):
                     corr = 0
                     for j in range(2,i+1):
@@ -400,7 +400,7 @@ class Mpss(AerosolMechanics):
                 if len(self.channels[ch:])>1:
                     interpnsd = interp1d(self.channels[ch:],
                                          nsd[ch:],
-                                         kind='cubic')
+                                         kind=interpolation)
                 corr = 0
                 for j in range(2,imax+1):
                     dp_inter = self.mpss_dma.v_to_dp(volts[ch], i=j)
