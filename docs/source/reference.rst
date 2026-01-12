@@ -47,7 +47,7 @@ API reference
     :members:
 
 .. autoclass:: aerosolpy.growth.TwoDimVolatility
-    :members::
+    :members:
     
 .. autoclass:: aerosolpy.growth.VbsModel
     :members:
