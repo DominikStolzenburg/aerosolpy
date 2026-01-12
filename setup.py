@@ -25,5 +25,5 @@ setuptools.setup(
     classifiers = ["Intended Audience :: Science/Research",
                    "Programming Language :: Python :: 3.9",
                    ],
-    install_requires = ['numpy>=1.21','scipy>=1.7.3','pandas>=1.4.2', 'numdifftools>=0.9.42']
+    install_requires = ['numpy>=1.21','scipy>=1.7.3','pandas>=1.4.2', 'numdifftools>=0.9.41']
 )

@@ -23,7 +23,7 @@ copyright = '2024, Dominik Stolzenburg'
 author = 'Dominik Stolzenburg'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.0'
+release = '1.0.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -34,7 +34,7 @@ release = '0.4.0'
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon'
 ]
 
-autodoc_mock_imports = ['numpy','scipy','pandas'
+autodoc_mock_imports = ['numpy','scipy','pandas','numdifftools'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
