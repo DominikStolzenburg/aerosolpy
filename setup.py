@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = "aerosolpy",
-    version = "1.0.0",
+    version = "1.0.2",
     author = "Dominik Stolzenburg",
     author_email = "dominik.stolzenburg@tuwien.ac.at",
     description = ("aerosolpy is a collection of functions and " 
@@ -25,5 +25,5 @@ setuptools.setup(
     classifiers = ["Intended Audience :: Science/Research",
                    "Programming Language :: Python :: 3.9",
                    ],
-    install_requires = ['numpy>=1.21','scipy>=1.7.3','pandas>=1.4.2']
+    install_requires = ['numpy>=1.21','scipy>=1.7.3','pandas>=1.4.2', 'numdifftools>=0.9.42']
 )

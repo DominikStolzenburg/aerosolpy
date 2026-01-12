@@ -53,6 +53,7 @@ Current prerequisits:
 `numpy>=1.21`
 `scipy>=1.7.3`
 `pandas>=1.4.2`
+`numdifftools>=0.9.42`
 
 ## Usage
 

@@ -1,5 +1,9 @@
 # aerosolpy - version histroy
 
+## v1.0.2
+
+fixes scipy.misc.derivative being deprecated. uses numdifftools instead.n
+
 ## v1.0.0
 
 `aerosolpy.growth.VbsModel` includes particle phase diffusion. 

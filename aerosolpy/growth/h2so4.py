@@ -5,7 +5,7 @@ Created on Tue Sep 17 20:47:21 2024
 @author: domin
 """
 import numpy as np
-from scipy.misc import derivative
+import numdifftools as nd
 #import necessary base package functions and classes 
 from aerosolpy.kinetics import AerosolKinetics
 
@@ -215,13 +215,14 @@ class SulfuricAcid(AerosolKinetics):
         array_like of float
             size derivative of log(w rho)
         """
-        res = derivative(
+        der = nd.Derivative(
                 lambda x: np.log(self.wt(x,model=model)
                                  *self.rho_h2so4(self.wt(x,model=model))
                                  ),
-            dp,dx=1e-6
-                    )
-        return res
+                full_output=True
+                )
+        val, info = der(dp)
+        return val
     
     def diff_coeff_h2so4(self):
         """
